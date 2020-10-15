@@ -22,11 +22,12 @@ SOFTWARE.
 
 
 =============================================================================
+
 Other dependencies and licenses: 
 
 
 -----------------------------------------------------------------------------  
-						Apache License
+	Apache License
 		    applies to:
             - tf_mesh_renderer (https://github.com/google/tf_mesh_renderer)
 -----------------------------------------------------------------------------
@@ -46,7 +47,7 @@ limitations under the License.
 
 
 -----------------------------------------------------------------------------  
-						The MIT License (MIT)
+	The MIT License (MIT)
 		    applies to:
             - pix2pix (https://github.com/affinelayer/pix2pix-tensorflow)
 -----------------------------------------------------------------------------
@@ -74,13 +75,13 @@ SOFTWARE.
 
 
 -----------------------------------------------------------------------------  
-						CelebAMask-HQ (https://github.com/switchablenorms/CelebAMask-HQ)
+	CelebAMask-HQ (https://github.com/switchablenorms/CelebAMask-HQ)
 -----------------------------------------------------------------------------
 The use of this software is RESTRICTED to non-commercial research and educational purposes.
 
 
 -----------------------------------------------------------------------------  
-						The MIT License (MIT)
+	The MIT License (MIT)
 		    applies to:
             - nricp (https://github.com/charlienash/nricp)
 -----------------------------------------------------------------------------
