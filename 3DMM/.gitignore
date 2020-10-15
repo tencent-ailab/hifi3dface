@@ -1,0 +1,4 @@
+*.mat
+*.obj
+*.pyc
+scripts/*.png
