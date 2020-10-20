@@ -166,7 +166,7 @@ results_dir=$ROOT_DIR/results
 mkdir -p $results_dir
 
 if [ $is_bfm == "False" ];then
-    scp $resources_path/test.mtl $results_dir/
+    scp $(pwd)/test.mtl $results_dir/
     scp ${shape_out_dir}/face.obj $results_dir/head.obj
     scp $ROOT_DIR/pix2pix_convert/output_for_texture_tex_D.png $results_dir/albedo.png
     scp $ROOT_DIR/pix2pix/out_for_texture_tex_N.png $results_dir/normal.png
