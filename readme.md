@@ -69,10 +69,10 @@ This repository provides the python code and 3DMM of the following paper:
     ```
     git clone https://github.com/tencent-ailab/hifi3dface.git
     cd hifi3dface
-    sh install.sh
+    bash install.sh
     ```
     The script in **install.sh** installs all packages required to run our code, and compiles the c++ kernel of the differentiable renderer provided by [tf_mesh_renderer](https://github.com/google/tf_mesh_renderer).
-    Pay attention to finding the correct path to **TF_INC** and **TF_LIB**. The path specified in **install.sh** might not suit your case. If it does not work, please try to fix them manually.
+    Pay attention to finding the correct path to **TF_INC** and **TF_LIB**. The path specified in **install.sh** might not suit your case. If it does not work, please try to fix them manually. If your g++ version is greater than 4, please delete "-D_GLIBCXX_USE_CXX11_ABI=0" ( Line 9 ) in **install.sh**.
     You can also compile the code using the method provided by [**tf_mesh_renderer**](https://github.com/google/tf_mesh_renderer). 
 
 - **Downloads**
@@ -142,7 +142,7 @@ Modify **run_rgbd.sh** as following:
 
 Please run the follow command to generate the results.
 ```bash
-sh run_opt_rgbd.sh
+bash run_opt_rgbd.sh
 ```
 
 The RGBD data will be used for shape optimization and HD texture/normal maps generation. We highly recommend that you use our 3DMM version **AI-NExT-Shape.mat** in order to achieve the same results as reported in our paper. You can also run our code with **BFM**, but the texture map and normal map will not be generated if you use BFM, as BFM does not provide UV maps.
@@ -213,7 +213,7 @@ Please modify **run_rgb.sh** as the following:
 
 Please run the follow command to generate the results.
 ```bash
-sh run_opt_rgb.sh
+bash run_opt_rgb.sh
 ```
 
 Note that if you run the script with more than one images, only the first image would be used for generating the texture map and normal map. Besides, you can also run the code with **BFM**, but the texture map and normal map will not be generated in this case. We highly recommend that you use the our 3DMM version **AI-NExT-Shape-NoAug.mat** for the RGB inputs, as there are no reliable geometric constraints without depth data inputs. 

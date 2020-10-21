@@ -42,7 +42,7 @@ from RGBD_utils.SparseFusion import (
 )
 from RGBD_utils.CropMask import crop_depth_for_fusion
 from RGBD_utils.PoseTools import PoseTools
-from utils.ply import write_ply, write_obj
+from third_party.ply import write_ply, write_obj
 import cv2
 
 

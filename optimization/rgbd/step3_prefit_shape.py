@@ -37,7 +37,7 @@ import sys
 sys.path.append("../..")
 from RGBD_utils.FitTools import get_kp3d, fit_para_shape_with_kp3d
 from absl import app, flags
-from utils.ply import write_ply
+from third_party.ply import write_ply
 from utils.basis import load_3dmm_basis, load_3dmm_basis_bfm
 import os
 
