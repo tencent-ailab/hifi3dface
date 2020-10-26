@@ -186,13 +186,10 @@ def compute_loss(
             [
                 image_batch,
                 render_img_in_ori_pose["render_image"],
-                render_image_fake_M,
-                render_image_fake_L,
-                render_image_fake_R,
             ],
             axis=0,
         )
-        N_group = 5
+        N_group = 2
     else:  # RGBD
         all_images = tf.concat(
             [

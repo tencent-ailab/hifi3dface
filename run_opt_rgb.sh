@@ -51,7 +51,7 @@ fi
 
 cd ./optimization/rgb
 
-train_step=120
+train_step=150
 log_step=20
 learning_rate=0.05
 lr_decay_step=20
@@ -59,9 +59,9 @@ lr_decay_rate=0.9
 
 photo_weight=100.0
 gray_photo_weight=80.0
-reg_shape_weight=4.0
-reg_tex_weight=8.0
-id_weight=1.5
+reg_shape_weight=0.5
+reg_tex_weight=2.0
+id_weight=1.0
 real_86pt_lmk3d_weight=5.0
 real_68pt_lmk2d_weight=5.0
 lmk_struct_weight=0

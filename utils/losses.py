@@ -256,7 +256,7 @@ class Losses(object):
         invisible_losses = tf.reshape(tf.stack(invisible_losses, axis=0), [-1, 18])
 
         losses = tf.where(
-            tf.greater(0.0, normal_z), standard_landmark_losses, invisible_losses
+            tf.greater(normal_z, 0.0), standard_landmark_losses, invisible_losses
         )
         loss = tf.reduce_mean(losses, name="landmark2d_loss")
         return loss
