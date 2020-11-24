@@ -346,16 +346,16 @@ def detect_with_MTCNN(origin_images_dir, out_dir, pb_path, mode="no_depth"):
     factor = 0.709  # scale factor
 
     with tf.Graph().as_default():
-        graph_def = tf.GraphDef()
+        graph_def = tf.compat.v1.GraphDef()
         graph_file = pb_path
         with open(graph_file, "rb") as f:
             print("hello")
             graph_def.ParseFromString(f.read())
             tf.import_graph_def(graph_def, name="")
 
-        sess = tf.Session()
+        sess = tf.compat.v1.Session()
         with sess.as_default():
-            tf.global_variables_initializer().run()
+            tf.compat.v1.global_variables_initializer().run()
             pnet, rnet, onet = create_mtcnn_pb(sess)
 
     # find files

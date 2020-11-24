@@ -60,7 +60,7 @@ def compute_loss(
         )
 
         tot_loss = tot_loss + lmk3d_86_loss * FLAGS.real_86pt_lmk3d_weight
-        tf.summary.scalar("lmk3d_86_loss", lmk3d_86_loss)
+        tf.compat.v1.summary.scalar("lmk3d_86_loss", lmk3d_86_loss)
 
     # 2D 68pt lmk loss
     if opt_type == "RGB":
@@ -76,7 +76,7 @@ def compute_loss(
             )
 
             tot_loss = tot_loss + lmk2d_68_loss * FLAGS.real_68pt_lmk2d_weight
-            tf.summary.scalar("lmk2d_68_loss", lmk2d_68_loss)
+            tf.compat.v1.summary.scalar("lmk2d_68_loss", lmk2d_68_loss)
 
     # lmk struct loss
     if (FLAGS.real_86pt_lmk3d_weight > 0) & (FLAGS.lmk_struct_weight > 0):
@@ -85,19 +85,19 @@ def compute_loss(
         )
 
         tot_loss = tot_loss + lmk_struct_loss * FLAGS.lmk_struct_weight
-        tf.summary.scalar("landmark_struct", lmk_struct_loss)
+        tf.compat.v1.summary.scalar("landmark_struct", lmk_struct_loss)
 
     # add regularization to shape parameter
     if FLAGS.reg_shape_weight > 0:
         reg_shape_loss = Losses.reg_loss(var_list["para_shape"])
         tot_loss = tot_loss + reg_shape_loss * FLAGS.reg_shape_weight
-        tf.summary.scalar("reg_shape", reg_shape_loss)
+        tf.compat.v1.summary.scalar("reg_shape", reg_shape_loss)
 
     # add regularization to tex parameter
     if FLAGS.reg_tex_weight > 0:
         reg_tex_loss = Losses.reg_loss(var_list["para_tex"])
         tot_loss = tot_loss + reg_tex_loss * FLAGS.reg_tex_weight
-        tf.summary.scalar("reg_tex", reg_tex_loss)
+        tf.compat.v1.summary.scalar("reg_tex", reg_tex_loss)
 
     # get seg mask for photo loss
     from utils.misc import Utils, tf_detect_glassframe
@@ -116,24 +116,24 @@ def compute_loss(
             image_batch, render_img_in_ori_pose["render_image"], photo_mask_batch
         )
         tot_loss = tot_loss + photo_loss * FLAGS.photo_weight
-        tf.summary.scalar("photo", photo_loss)
+        tf.compat.v1.summary.scalar("photo", photo_loss)
 
     # gray photo loss (300 x 300)
-    gray_image_batch = tf.reduce_mean(image_batch, axis=-1, keepdims=True)
+    gray_image_batch = tf.reduce_mean(input_tensor=image_batch, axis=-1, keepdims=True)
     gray_render_image_batch = tf.reduce_mean(
-        render_img_in_ori_pose["render_image"], axis=-1, keepdims=True
+        input_tensor=render_img_in_ori_pose["render_image"], axis=-1, keepdims=True
     )
     if FLAGS.gray_photo_weight > 0:
         gray_photo_loss = Losses.photo_loss(
             gray_image_batch, gray_render_image_batch, photo_mask_batch
         )
         tot_loss = tot_loss + gray_photo_loss * FLAGS.gray_photo_weight
-        tf.summary.scalar("gray_photo", gray_photo_loss)
+        tf.compat.v1.summary.scalar("gray_photo", gray_photo_loss)
 
     # depth loss (300 x 300)
     if opt_type == "RGBD":
         if FLAGS.depth_weight > 0:
-            depth_weight = FLAGS.depth_weight - tf.train.exponential_decay(
+            depth_weight = FLAGS.depth_weight - tf.compat.v1.train.exponential_decay(
                 FLAGS.depth_weight, global_step, 5, 0.1
             )
 
@@ -144,11 +144,11 @@ def compute_loss(
                 depth_image_batch_GT > 0, tf.float32
             )
 
-            tf.summary.image("depth_mask_batch", depth_mask_batch, max_outputs=6)
-            tf.summary.image(
+            tf.compat.v1.summary.image("depth_mask_batch", depth_mask_batch, max_outputs=6)
+            tf.compat.v1.summary.image(
                 "depth_image_batch_GT", depth_image_batch_GT, max_outputs=6
             )
-            tf.summary.image(
+            tf.compat.v1.summary.image(
                 "depth_image_batch_Pre", depth_image_batch_Pre, max_outputs=6
             )
 
@@ -156,7 +156,7 @@ def compute_loss(
                 depth_image_batch_GT, depth_image_batch_Pre, depth_mask_batch
             )
             tot_loss = tot_loss + depth_loss * depth_weight
-            tf.summary.scalar("depth_loss", depth_loss)
+            tf.compat.v1.summary.scalar("depth_loss", depth_loss)
 
     # used for cal grad for light para (id loss not influence light)
     tot_loss_illum = tot_loss
@@ -206,23 +206,23 @@ def compute_loss(
             all_images * 255.0, N_group, FLAGS.vggpath, "fc7", data_format="NHWC"
         )
         tot_loss = tot_loss + id_loss * FLAGS.id_weight
-        tf.summary.scalar("id_loss", id_loss)
+        tf.compat.v1.summary.scalar("id_loss", id_loss)
 
-    tf.summary.scalar("tot_loss", tot_loss)
+    tf.compat.v1.summary.scalar("tot_loss", tot_loss)
 
     # other summary
-    tf.summary.image("image_batch", image_batch, max_outputs=6)
-    tf.summary.image(
+    tf.compat.v1.summary.image("image_batch", image_batch, max_outputs=6)
+    tf.compat.v1.summary.image(
         "render", render_img_in_ori_pose["render_image"] * 255, max_outputs=6
     )
-    tf.summary.image(
+    tf.compat.v1.summary.image(
         "norm_image", tf.abs(render_img_in_ori_pose["norm_image"]), max_outputs=6
     )
-    tf.summary.image("photo_mask", photo_mask_batch * 255, max_outputs=6)
-    tf.summary.image("seg_mask", seg_mask, max_outputs=6)
-    tf.summary.image("diffuse_batch", render_img_in_ori_pose["diffuse"], max_outputs=6)
-    tf.summary.image("render_image_fake_M", render_image_fake_M, max_outputs=6)
-    tf.summary.image("render_image_fake_L", render_image_fake_L, max_outputs=6)
-    tf.summary.image("render_image_fake_R", render_image_fake_R, max_outputs=6)
+    tf.compat.v1.summary.image("photo_mask", photo_mask_batch * 255, max_outputs=6)
+    tf.compat.v1.summary.image("seg_mask", seg_mask, max_outputs=6)
+    tf.compat.v1.summary.image("diffuse_batch", render_img_in_ori_pose["diffuse"], max_outputs=6)
+    tf.compat.v1.summary.image("render_image_fake_M", render_image_fake_M, max_outputs=6)
+    tf.compat.v1.summary.image("render_image_fake_L", render_image_fake_L, max_outputs=6)
+    tf.compat.v1.summary.image("render_image_fake_R", render_image_fake_R, max_outputs=6)
 
     return tot_loss, tot_loss_illum

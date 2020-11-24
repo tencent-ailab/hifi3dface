@@ -627,7 +627,7 @@ def get_uv_texture(uv_bases, para_tex_dict):
         else:
             full_uv = full_uv + fitted_uv
             full_mask = full_mask + fitted_mask
-    full_mask = tf.where(
+    full_mask = tf.compat.v1.where(
         tf.greater(full_mask, 0.5), tf.ones_like(full_mask), tf.zeros_like(full_mask)
     )
     return full_uv, full_mask

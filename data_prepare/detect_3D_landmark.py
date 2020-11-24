@@ -346,15 +346,15 @@ def detect_lmk86(origin_images_dir, mtcnn_dir, out_dir, names_list, pb_path):
     fopen = open(out_dir, "w")
 
     with tf.Graph().as_default():
-        graph_def = tf.GraphDef()
+        graph_def = tf.compat.v1.GraphDef()
         graph_file = pb_path
         with open(graph_file, "rb") as f:
             print("hello")
             graph_def.ParseFromString(f.read())
             tf.import_graph_def(graph_def, name="")
 
-        with tf.Session() as sess:
-            tf.global_variables_initializer().run()
+        with tf.compat.v1.Session() as sess:
+            tf.compat.v1.global_variables_initializer().run()
             image = sess.graph.get_tensor_by_name("lmk86pt_input:0")
             predict_lanmark = sess.graph.get_tensor_by_name("lmk86pt_output:0")
 

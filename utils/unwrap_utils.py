@@ -36,7 +36,7 @@ import glob
 import scipy.io
 import skimage.io
 from PIL import Image
-
+tf.compat.v1.disable_v2_behavior()
 sys.path.append("..")
 import third_party.rasterize_triangles as rasterize
 from utils.basis import load_3dmm_basis, get_geometry
@@ -123,25 +123,25 @@ def warp_ver_to_uv(
 
     assert (
         len(v_attrs_list.shape) == 2
-        and v_attrs_list.shape[0].value == tri_v_list.shape[0].value
+        and v_attrs_list.shape[0] == tri_v_list.shape.as_list()[0]
     )
 
     # add sample indices to vt_list
-    n_vt = vt_list.shape[0].value
+    n_vt = vt_list.shape.as_list()[0]
     vt_attrs_list = tf.scatter_nd(
         tri_vt_list,
         v_attrs_list,
-        shape=[batch_size, n_vt, v_attrs.shape[2].value],
+        shape=[batch_size, n_vt, v_attrs.shape.as_list()[2]],
         name="vt_attrs_list",
     )
     vt_attrs_count = tf.scatter_nd(
         tri_vt_list, v_attrs_count, shape=[batch_size, n_vt, 1], name="vt_attrs_count"
     )
-    vt_attrs_list = tf.div(vt_attrs_list, vt_attrs_count)
+    vt_attrs_list = tf.compat.v1.div(vt_attrs_list, vt_attrs_count)
 
-    assert len(vt_list.shape) == 2 and vt_list.shape[1].value == 2
+    assert len(vt_list.shape) == 2 and vt_list.shape.as_list()[1] == 2
     u, v = tf.split(vt_list, 2, axis=1)
-    z = tf.random_normal(shape=[n_vt, 1], stddev=0.000001)
+    z = tf.random.normal(shape=[n_vt, 1], stddev=0.000001)
     vt_list = tf.concat([(u * 2 - 1), ((1 - v) * 2 - 1), z], axis=1, name="full_vt")
     vt_list = tf.stack([vt_list] * batch_size, axis=0)
     # scatter vertex texture attributes
@@ -152,7 +152,7 @@ def warp_ver_to_uv(
         tri_vt,
         uv_size,
         uv_size,
-        [-1] * vt_attrs_list.shape[2].value,
+        [-1] * vt_attrs_list.shape.as_list()[2],
     )
     renders.set_shape((batch_size, uv_size, uv_size, n_channels))
     # renders = tf.clip_by_value(renders, 0, 1)

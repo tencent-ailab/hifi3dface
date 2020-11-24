@@ -37,6 +37,8 @@ import cv2
 from PIL import Image
 import sys
 sys.path.append('../..')
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.disable_v2_behavior()
 
 from utils.basis import load_3dmm_basis, get_region_uv_texture, construct
 from utils.misc import tf_blend_uv, blend_uv
@@ -124,14 +126,14 @@ def main(_):
     imageH = img_list[0].shape[0]
     imageW = img_list[0].shape[1]
     assert(img_list[0].shape[0] == img_list[1].shape[0] and img_list[0].shape[1] == img_list[2].shape[1])
-    image_mid_batch = tf.placeholder(dtype=tf.float32, shape=[1, imageH, imageW, 3], name='image_mid')
-    image_left_batch = tf.placeholder(dtype=tf.float32, shape=[1, imageH, imageW, 3], name='image_left')
-    image_right_batch = tf.placeholder(dtype=tf.float32, shape=[1, imageH, imageW, 3], name='image_right')
+    image_mid_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, imageH, imageW, 3], name='image_mid')
+    image_left_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, imageH, imageW, 3], name='image_left')
+    image_right_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, imageH, imageW, 3], name='image_right')
 
     NV = basis3dmm['basis_shape'].shape[1] // 3
-    proj_xyz_mid_batch = tf.placeholder(dtype=tf.float32, shape=[1, NV, 3], name='proj_xyz_mid')
-    proj_xyz_left_batch = tf.placeholder(dtype=tf.float32, shape=[1, NV, 3], name='proj_xyz_left')
-    proj_xyz_right_batch = tf.placeholder(dtype=tf.float32, shape=[1, NV, 3], name='proj_xyz_right')
+    proj_xyz_mid_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, NV, 3], name='proj_xyz_mid')
+    proj_xyz_left_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, NV, 3], name='proj_xyz_left')
+    proj_xyz_right_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, NV, 3], name='proj_xyz_right')
 
     ver_normals_mid_batch, _ = Projector.get_ver_norm(proj_xyz_mid_batch, basis3dmm['tri'], 'normal_mid')
     ver_normals_left_batch, _ = Projector.get_ver_norm(proj_xyz_left_batch, basis3dmm['tri'], 'normal_left')
@@ -179,9 +181,9 @@ def main(_):
     #------------------------------------------------------------------------------------------
     # build fitting graph
     uv_bases = basis3dmm['uv']
-    para_tex = tf.get_variable(
+    para_tex = tf.compat.v1.get_variable(
             shape=[1,uv_bases['basis'].shape[0]],
-            initializer=tf.zeros_initializer(),
+            initializer=tf.compat.v1.zeros_initializer(),
             name='para_tex'
             )
 
@@ -189,7 +191,7 @@ def main(_):
     print("uv_rgb: ", uv_rgb.shape )
 
     # build fitting loss
-    input_uv512_batch = tf.placeholder(dtype=tf.float32, shape=[1, 512, 512, 3], name='gt_uv')
+    input_uv512_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, 512, 512, 3], name='gt_uv')
     tot_loss = 0.
     loss_str = 'total:{}'
     if FLAGS.photo_weight > 0:
@@ -206,16 +208,16 @@ def main(_):
         uv_reg_tex_loss = Losses.reg_loss(para_tex)
         tot_loss = tot_loss + uv_reg_tex_loss * FLAGS.uv_reg_tex_weight
         loss_str = loss_str + '; reg:{}'
-    optim = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+    optim = tf.compat.v1.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
     train_op = optim.minimize(tot_loss)
 
 
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
 
         if FLAGS.write_graph:
-            tf.train.write_graph(sess.graph_def, '', FLAGS.pb_path, as_text=True)
+            tf.io.write_graph(sess.graph_def, '', FLAGS.pb_path, as_text=True)
             exit()
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         start_time = time.time()
         uv_extract,   o_uv_left_batch,  o_uv_mid_batch, o_uv_right_batch,   o_mask_right_batch= \
@@ -305,4 +307,4 @@ if __name__ == '__main__':
     flags.DEFINE_float('learning_rate', 0.1, 'string : path for 3dmm')
     flags.DEFINE_string('GPU_NO', '7', 'which GPU')
 
-    tf.app.run(main)
+    tf.compat.v1.app.run(main)

@@ -32,10 +32,13 @@ import numpy as np
 import scipy.io as scio
 import cv2
 import tensorflow as tf
-import tensorflow.contrib.opt as tf_opt
+#import tensorflow.contrib.opt as tf_opt
 import os
 from absl import app, flags
 import sys
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.disable_v2_behavior()
+
 
 sys.path.append("../..")
 
@@ -51,67 +54,67 @@ from PIL import Image
 def define_variable(num_of_img, imageH, imageW, para_shape_shape, para_tex_shape, info):
 
     # variable-trainable=False
-    image_batch = tf.get_variable(
+    image_batch = tf.compat.v1.get_variable(
         shape=[num_of_img, imageH, imageW, 3],
         dtype=tf.float32,
         name="ori_img",
         trainable=False,
-        initializer=tf.constant_initializer(info["img_list"] / 255.0),
+        initializer=tf.compat.v1.constant_initializer(info["img_list"] / 255.0),
     )
 
-    segmentation = tf.get_variable(
+    segmentation = tf.compat.v1.get_variable(
         shape=[num_of_img, imageH, imageW, 19],
         dtype=tf.float32,
         name="face_segmentation",
         trainable=False,
-        initializer=tf.constant_initializer(info["seg_list"]),
+        initializer=tf.compat.v1.constant_initializer(info["seg_list"]),
     )
 
-    lmk_86_3d_batch = tf.get_variable(
+    lmk_86_3d_batch = tf.compat.v1.get_variable(
         shape=[num_of_img, 86, 2],
         dtype=tf.float32,
         name="lmk_86_3d_batch",
         trainable=False,
-        initializer=tf.constant_initializer(info["lmk_list3D"]),
+        initializer=tf.compat.v1.constant_initializer(info["lmk_list3D"]),
     )
 
-    lmk_68_2d_batch = tf.get_variable(
+    lmk_68_2d_batch = tf.compat.v1.get_variable(
         shape=[num_of_img, 68, 2],
         dtype=tf.float32,
         name="lmk_68_2d_batch",
         trainable=False,
-        initializer=tf.constant_initializer(info["lmk_list2D"]),
+        initializer=tf.compat.v1.constant_initializer(info["lmk_list2D"]),
     )
 
-    K = tf.get_variable(
+    K = tf.compat.v1.get_variable(
         shape=[1, 3, 3],
         dtype=tf.float32,
         name="K",
         trainable=False,
-        initializer=tf.constant_initializer(info["K"]),
+        initializer=tf.compat.v1.constant_initializer(info["K"]),
     )
 
     # variable-trainable=True
-    pose6 = tf.get_variable(
+    pose6 = tf.compat.v1.get_variable(
         shape=[num_of_img, 6, 1],
         dtype=tf.float32,
         name="para_pose6",
         trainable=True,
-        initializer=tf.constant_initializer(info["se3_list"]),
+        initializer=tf.compat.v1.constant_initializer(info["se3_list"]),
     )
 
-    para_shape = tf.get_variable(
+    para_shape = tf.compat.v1.get_variable(
         shape=[1, para_shape_shape], dtype=tf.float32, name="para_shape", trainable=True
     )
 
-    para_tex = tf.get_variable(
+    para_tex = tf.compat.v1.get_variable(
         shape=[1, para_tex_shape], dtype=tf.float32, name="para_tex", trainable=True
     )
 
-    para_illum = tf.get_variable(
+    para_illum = tf.compat.v1.get_variable(
         shape=[num_of_img, 27],
         dtype=tf.float32,
-        initializer=tf.zeros_initializer(),
+        initializer=tf.compat.v1.zeros_initializer(),
         name="para_illum",
         trainable=True,
     )
@@ -164,12 +167,12 @@ def build_RGB_opt_graph(var_list, basis3dmm, imageH, imageW):
     # optimizer
     global_step = tf.Variable(0, name="global_step_train", trainable=False)
     learning_rate = tf.maximum(
-        tf.train.exponential_decay(
+        tf.compat.v1.train.exponential_decay(
             FLAGS.learning_rate, global_step, FLAGS.lr_decay_step, FLAGS.lr_decay_rate
         ),
         FLAGS.min_learning_rate,
     )
-    optim = tf.train.AdamOptimizer(learning_rate=learning_rate)
+    optim = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
 
     gvs_illum = optim.compute_gradients(tot_loss_illum)
     gvs = optim.compute_gradients(tot_loss)
@@ -241,8 +244,8 @@ def RGB_opt(_):
     out_list = build_RGB_opt_graph(var_list, basis3dmm, imageH, imageW)
 
     # summary_op
-    summary_op = tf.summary.merge_all()
-    summary_writer = tf.summary.FileWriter(FLAGS.summary_dir)
+    summary_op = tf.compat.v1.summary.merge_all()
+    summary_writer = tf.compat.v1.summary.FileWriter(FLAGS.summary_dir)
 
     if os.path.exists(FLAGS.summary_dir) is False:
         os.makedirs(FLAGS.summary_dir)
@@ -250,11 +253,11 @@ def RGB_opt(_):
         os.makedirs(FLAGS.out_dir)
 
     # start opt
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     # config.gpu_options.per_process_gpu_memory_fraction=0.5
     config.gpu_options.allow_growth = True
-    with tf.Session(config=config) as sess:
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session(config=config) as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
 
         import time
 

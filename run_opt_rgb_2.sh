@@ -1,150 +1,85 @@
-
 #!/bin/bash
-GPU_NO=0;
-is_bfm="True"
+
+GPU_NO=0
+IS_BFM="False"
+#export PYTHONPATH=.
 
 # # constants
-basic_path=/root/models/mnt/3DMM/files/;
-resources_path=/root/models/mnt/resources/;
+#basic_path=$PWD/3DMM/files/;
+#resources_path=$PWD/resources/;
+basic_path=/root/models/mnt/3DMM/files;
+resources_path=/root/models/mnt/resources;
 
 uv_base="$basic_path/AI-NEXT-Albedo-Global.mat"
 uv_regional_pyramid_base="$basic_path/AI-NEXT-AlbedoNormal-RPB/"
 
-if [ $is_bfm == "False" ];then
-    shape_exp_bases="$basic_path/AI-NEXT-Shape.mat"
+if [ $IS_BFM == "False" ];then
+    shape_exp_bases="$basic_path/AI-NEXT-Shape-NoAug.mat"
 else
     shape_exp_bases="$resources_path/BFM2009_Model.mat"
 fi
 
 vggpath="$resources_path/vgg-face.mat"
-info_for_add_head="$resources_path/info_for_add_head.npy"
 pb_path=$resources_path/PB/
 
 # # data directories
-is_only_four_frame="False"
-ROOT_DIR=/root/models/mnt/test_data/test_data/RGBD/test1/;
-img_dir="$ROOT_DIR"
+ROOT_DIR=/root/models/mnt/test_data/test_data/RGB/test1/single_img/;
+img_dir=$ROOT_DIR
 
 ########################################################
 echo "prepare datas";
-
-prefit_dir="$ROOT_DIR/prefit"
-prepare_dir="$ROOT_DIR/prepare"
-
 cd ./data_prepare
 
+prepare_dir="$ROOT_DIR/prepare_rgb"
+
 python3 -u run_data_preparation.py \
-        --GPU_NO=${GPU_NO}  \
-        --mode='test_RGBD' \
-        --pb_path=${pb_path} \
-        --img_dir=${img_dir}/ \
-        --out_dir=${prepare_dir}
+    --GPU_NO=${GPU_NO}  \
+    --mode='test_RGB' \
+    --pb_path=${pb_path} \
+    --img_dir=${img_dir} \
+    --out_dir=${prepare_dir} 
 
 if [ "$?" -ne 0 ]; then echo "data prepare failed"; exit 1; fi
 
 cd ..
 
 ########################################################
-cd ./optimization/rgbd
+echo "start RGB opt";
 
-echo "start RGBD opt process";
-
-echo "step 0: load datas";
-python3 -u step0_prepare_frontend_data.py \
-        --capture_dir=$img_dir \
-        --prepare_dir=${prepare_dir}
-
-if [ "$?" -ne 0 ]; then echo "(step 0) load datas failed"; exit 1; fi
-
-echo "step 1: choose frames : mid-left-right-up";
-if [ $is_only_four_frame == "False" ];then
-    python3 -u step1A_choose_frames.py \
-            --prepare_dir=${prepare_dir}/    \
-            --prefit=${prefit_dir}/
+if [ $IS_BFM == "False" ];then
+    shape_out_dir=${ROOT_DIR}/our_opt_RGB
 else
-    python3 -u step1B_only4_choose_frames.py \
-            --prepare_dir=${prepare_dir}/    \
-            -prefit=${prefit_dir}/
+    shape_out_dir=${ROOT_DIR}/bfm_opt_RGB
 fi
 
-if [ "$?" -ne 0 ]; then echo "(step 1) choose frames failed"; exit 1; fi
 
-echo "step 2: sparse fusion ";
-python3 -u step2_sparse_fusion.py \
-        --is_bfm=${is_bfm} \
-        --prefit=${prefit_dir}/
+cd ./optimization/rgb
 
-if [ "$?" -ne 0 ]; then echo "(step 2) sparse fusion failed"; exit 1; fi
-
-echo "step 3: prefit shape ";
-python3 -u step3_prefit_shape.py \
-        --GPU_NO=${GPU_NO}  \
-        --is_bfm=${is_bfm} \
-        --prefit=${prefit_dir}/    \
-        --modle_path=${resources_path} \
-        --basis3dmm_path=${shape_exp_bases}
-
-if [ "$?" -ne 0 ]; then echo "(step 3) prefit shape failed"; exit 1; fi
-
-echo "step 4: prefit Albedo_Global uv ";
-if [ $is_bfm == "False" ];then
-    python3 -u step4A_prefit_Albedo_Global.py \
-            --GPU_NO=${GPU_NO}  \
-            --is_bfm=${is_bfm} \
-            --basis3dmm_path=${shape_exp_bases}  \
-            --uv_path=${uv_base}  \
-            --resources_path=${resources_path}  \
-            --output_dir=${prefit_dir}/
-else
-    python3 -u step4B_prefit_bfm_rgb.py \
-            --GPU_NO=${GPU_NO}  \
-            --num_of_img=4 \
-            --is_bfm=${is_bfm} \
-            --basis3dmm_path=${shape_exp_bases} \
-            --uv_path=${uv_base} \
-            --vggpath=${vggpath} \
-            --prefit_dir=${prefit_dir} \
-            --prepare_dir=${prepare_dir} \
-            --summary_dir=${prefit_dir}/sum_prefit_bfm_tex/ 
-fi
-
-if [ "$?" -ne 0 ]; then echo "(step 4) prefit uv failed"; exit 1; fi
-
-echo "step 5: start RGBD opt ";
-
-if [ $is_bfm == "False" ];then
-    shape_out_dir=${ROOT_DIR}/our_opt_RGBD
-else
-    shape_out_dir=${ROOT_DIR}/bfm_opt_RGBD
-fi
-
-# constants
-log_step=10
+train_step=120
+log_step=20
 learning_rate=0.05
-lr_decay_step=10
+lr_decay_step=20
 lr_decay_rate=0.9
-photo_weight=100
-gray_photo_weight=80
-reg_shape_weight=0.4
-reg_tex_weight=0.0001
-depth_weight=1000
-id_weight=1.8
-real_86pt_lmk3d_weight=0.01
-lmk_struct_weight=0
-train_step=100
-is_fixed_pose="False"
-is_add_head_mirrow="False"
-is_add_head_male="True"
 
-python3 step5_run_RGBD_opt.py \
+photo_weight=100.0
+gray_photo_weight=80.0
+reg_shape_weight=4.0
+reg_tex_weight=8.0
+id_weight=1.5
+real_86pt_lmk3d_weight=5.0
+real_68pt_lmk2d_weight=5.0
+lmk_struct_weight=0
+
+num_of_img=1
+project_type="Pers"
+
+python3 run_RGB_opt.py \
 --GPU_NO=${GPU_NO} \
---is_bfm=${is_bfm} \
+--is_bfm=${IS_BFM} \
 --basis3dmm_path=${shape_exp_bases} \
 --uv_path=${uv_base} \
 --vggpath=${vggpath} \
---info_for_add_head=${info_for_add_head} \
---prefit_dir=${prefit_dir} \
---prepare_dir=${prepare_dir} \
+--base_dir=${prepare_dir} \
 --log_step=${log_step} \
 --train_step=${train_step} \
 --learning_rate=${learning_rate} \
@@ -152,25 +87,22 @@ python3 step5_run_RGBD_opt.py \
 --lr_decay_rate=${lr_decay_rate} \
 --photo_weight=${photo_weight} \
 --gray_photo_weight=${gray_photo_weight} \
---depth_weight=${depth_weight} \
 --id_weight=${id_weight} \
 --reg_shape_weight=${reg_shape_weight} \
 --reg_tex_weight=${reg_tex_weight} \
 --real_86pt_lmk3d_weight=${real_86pt_lmk3d_weight} \
+--real_68pt_lmk2d_weight=${real_68pt_lmk2d_weight} \
 --lmk_struct_weight=${lmk_struct_weight} \
---num_of_img=4 \
---fixed_pose=${is_fixed_pose} \
---is_add_head_mirrow=${is_add_head_mirrow} \
---is_add_head_male=${is_add_head_male} \
+--num_of_img=${num_of_img} \
 --out_dir=${shape_out_dir} \
 --summary_dir=${shape_out_dir}/summary \
+--project_type=${project_type} 
 
-if [ "$?" -ne 0 ]; then echo "(step 5) RGBD opt failed"; exit 1; fi
+if [ "$?" -ne 0 ]; then echo "RGB opt failed"; exit 1; fi
 
 cd ../..
-
 ########################################################
-if [ $is_bfm == "False" ];then
+if [ $IS_BFM == "False" ];then
     echo "start generate HD texture";
     cd ./texture
 
@@ -179,8 +111,8 @@ if [ $is_bfm == "False" ];then
         --basis3dmm_path=${shape_exp_bases} \
         --uv_path=${uv_base} \
         --uv_size=512 \
-        --is_mult_view=True \
-        --is_orig_img=False \
+        --is_mult_view=False \
+        --is_orig_img=True \
         --input_dir=${shape_out_dir} \
         --output_dir=${ROOT_DIR}/unwrap
 
@@ -237,9 +169,9 @@ echo "output results";
 results_dir=$ROOT_DIR/results
 mkdir -p $results_dir
 
-if [ $is_bfm == "False" ];then
-    scp $(pwd)/test.mtl $results_dir/
-    scp ${shape_out_dir}/head* $results_dir/
+if [ $IS_BFM == "False" ];then
+    scp $PWD/test.mtl $results_dir/
+    scp ${shape_out_dir}/face.obj $results_dir/head.obj
     scp $ROOT_DIR/pix2pix_convert/output_for_texture_tex_D.png $results_dir/albedo.png
     scp $ROOT_DIR/pix2pix/out_for_texture_tex_N.png $results_dir/normal.png
 else

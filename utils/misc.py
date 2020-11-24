@@ -65,11 +65,11 @@ class Utils(object):
 def tf_detect_glassframe(rgb_img, seg_img):
     # input range [0,1]
     dX = seg_img[:, :, 1:] - seg_img[:, :, :-1]
-    dX = tf.pad(dX, ((0, 0), (0, 0), (0, 1)), "constant")
+    dX = tf.pad(tensor=dX, paddings=((0, 0), (0, 0), (0, 1)), mode="constant")
     dY = seg_img[:, 1:, :] - seg_img[:, :-1, :]
-    dY = tf.pad(dY, ((0, 0), (0, 1), (0, 0)), "constant")
+    dY = tf.pad(tensor=dY, paddings=((0, 0), (0, 1), (0, 0)), mode="constant")
     G = tf.sqrt(tf.square(dX) + tf.square(dY))
-    G = tf.where(tf.greater(G, 0.1), tf.ones_like(G), tf.zeros_like(G))
+    G = tf.compat.v1.where(tf.greater(G, 0.1), tf.ones_like(G), tf.zeros_like(G))
     G = tf.expand_dims(G, axis=3)
 
     k = 10
@@ -104,18 +104,18 @@ def tf_rgb_to_hsv(rgb_image):
         rgb_norm_image, [0, 0, 0, 2], [batch_size, image_height, image_width, 3]
     )
     # r_img, g_img, b_img = tf.split(rgb_norm_image, 3, axis=3)
-    c_max = tf.reduce_max(rgb_norm_image, axis=3, keepdims=True)
-    c_min = tf.reduce_min(rgb_norm_image, axis=3, keepdims=True)
+    c_max = tf.reduce_max(input_tensor=rgb_norm_image, axis=3, keepdims=True)
+    c_min = tf.reduce_min(input_tensor=rgb_norm_image, axis=3, keepdims=True)
     delta = c_max - c_min
     EPS = 1e-8
 
     h_branch1 = tf.zeros_like(c_max)
-    h_branch2 = 60 * tf.div(g_img - b_img, c_max - c_min + EPS)
-    h_branch3 = 60 * tf.div(g_img - b_img, c_max - c_min + EPS) + 360
-    h_branch4 = 60 * tf.div(b_img - r_img, c_max - c_min + EPS) + 120
-    h_branch5 = 60 * tf.div(r_img - g_img, c_max - c_min + EPS) + 240
+    h_branch2 = 60 * tf.compat.v1.div(g_img - b_img, c_max - c_min + EPS)
+    h_branch3 = 60 * tf.compat.v1.div(g_img - b_img, c_max - c_min + EPS) + 360
+    h_branch4 = 60 * tf.compat.v1.div(b_img - r_img, c_max - c_min + EPS) + 120
+    h_branch5 = 60 * tf.compat.v1.div(r_img - g_img, c_max - c_min + EPS) + 240
 
-    h2 = tf.where(
+    h2 = tf.compat.v1.where(
         tf.logical_and(
             tf.equal(c_max, r_img),
             tf.logical_or(tf.equal(g_img, b_img), tf.greater(g_img, b_img)),
@@ -123,17 +123,17 @@ def tf_rgb_to_hsv(rgb_image):
         h_branch2,
         tf.zeros_like(h_branch2),
     )
-    h3 = tf.where(
+    h3 = tf.compat.v1.where(
         tf.logical_and(tf.equal(c_max, r_img), tf.less(g_img, b_img)),
         h_branch3,
         tf.zeros_like(h_branch3),
     )
-    h4 = tf.where(tf.equal(c_max, g_img), h_branch4, tf.zeros_like(h_branch4))
-    h5 = tf.where(tf.equal(c_max, b_img), h_branch5, tf.zeros_like(h_branch5))
+    h4 = tf.compat.v1.where(tf.equal(c_max, g_img), h_branch4, tf.zeros_like(h_branch4))
+    h5 = tf.compat.v1.where(tf.equal(c_max, b_img), h_branch5, tf.zeros_like(h_branch5))
     h = h2 + h3 + h4 + h5
 
-    s_branch2 = 1 - tf.div(c_min, c_max + EPS)
-    s = tf.where(tf.equal(c_max, 0), s_branch2, tf.zeros_like(s_branch2))
+    s_branch2 = 1 - tf.compat.v1.div(c_min, c_max + EPS)
+    s = tf.compat.v1.where(tf.equal(c_max, 0), s_branch2, tf.zeros_like(s_branch2))
 
     v = c_max
 
@@ -201,10 +201,10 @@ def tf_blend_uv(
 
     face_mask_blur = face_mask
     face_mask_blur = tf.nn.conv2d(
-        face_mask_blur, kernel_blur_row, strides=[1, 1, 1, 1], padding="SAME"
+        input=face_mask_blur, filters=kernel_blur_row, strides=[1, 1, 1, 1], padding="SAME"
     )
     face_mask_blur = tf.nn.conv2d(
-        face_mask_blur, kernel_blur_col, strides=[1, 1, 1, 1], padding="SAME"
+        input=face_mask_blur, filters=kernel_blur_col, strides=[1, 1, 1, 1], padding="SAME"
     )
     face_mask = face_mask_blur * face_mask
 
@@ -213,17 +213,17 @@ def tf_blend_uv(
         base_uv_yuv = tf_rgb_to_yuv(base_uv)
         face_uv_yuv = tf_rgb_to_yuv(face_uv)
 
-        sum_base = tf.reduce_sum(base_uv_yuv * face_mask, axis=(1, 2), keepdims=True)
-        sum_face = tf.reduce_sum(face_uv_yuv * face_mask, axis=(1, 2), keepdims=True)
-        sum_cnt = tf.reduce_sum(face_mask, axis=(1, 2), keepdims=True)
+        sum_base = tf.reduce_sum(input_tensor=base_uv_yuv * face_mask, axis=(1, 2), keepdims=True)
+        sum_face = tf.reduce_sum(input_tensor=face_uv_yuv * face_mask, axis=(1, 2), keepdims=True)
+        sum_cnt = tf.reduce_sum(input_tensor=face_mask, axis=(1, 2), keepdims=True)
         mu_base = sum_base / sum_cnt
         mu_face = sum_face / sum_cnt
 
         sum_base_sq = tf.reduce_sum(
-            tf.square(base_uv_yuv) * face_mask, axis=(1, 2), keepdims=True
+            input_tensor=tf.square(base_uv_yuv) * face_mask, axis=(1, 2), keepdims=True
         )
         sum_face_sq = tf.reduce_sum(
-            tf.square(face_uv_yuv) * face_mask, axis=(1, 2), keepdims=True
+            input_tensor=tf.square(face_uv_yuv) * face_mask, axis=(1, 2), keepdims=True
         )
         mu_base_sq = sum_base_sq / sum_cnt
         mu_face_sq = sum_face_sq / sum_cnt

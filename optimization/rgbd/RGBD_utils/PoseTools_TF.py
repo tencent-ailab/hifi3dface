@@ -106,13 +106,13 @@ class PoseTools_TF(object):
 
             rr0 = (
                 cos_theta * I
-                + (1 - cos_theta) * (n * tf.transpose(n))
+                + (1 - cos_theta) * (n * tf.transpose(a=n))
                 + sin_theta * n_hat
             )
             return rr0
 
         rr = tf.cond(
-            tf.squeeze(theta) > 1e-3,
+            pred=tf.squeeze(theta) > 1e-3,
             true_fn=lambda: tf_Rodrigues(a, b, c, theta),
             false_fn=lambda: tf.eye(3, 3),
         )
@@ -125,7 +125,7 @@ class PoseTools_TF(object):
         # in/out : n* 3 * 4
         # rr = TWC[0:3, 0:3]
         # tt = TWC[0:3, 3:]
-        rr_1 = tf.transpose(rr, [1, 0])
+        rr_1 = tf.transpose(a=rr, perm=[1, 0])
         tt_1 = -1 * tf.matmul(rr_1, tt)
         return rr_1, tt_1
 

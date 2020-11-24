@@ -60,21 +60,21 @@ def main(_):
         os.makedirs(FLAGS.output_dir)
 
     """ build graph """
-    front_image_batch = tf.placeholder(
+    front_image_batch = tf.compat.v1.placeholder(
         dtype=tf.float32, shape=[1, None, None, 3], name="front_image"
     )
-    front_image_batch_resized = tf.image.resize_images(
+    front_image_batch_resized = tf.image.resize(
         front_image_batch, (FLAGS.uv_size, FLAGS.uv_size)
     )
-    front_seg_batch = tf.placeholder(
+    front_seg_batch = tf.compat.v1.placeholder(
         dtype=tf.float32, shape=[1, None, None, 19], name="front_seg"
     )
-    front_proj_xyz_batch = tf.placeholder(
+    front_proj_xyz_batch = tf.compat.v1.placeholder(
         dtype=tf.float32,
         shape=[1, basis3dmm["basis_shape"].shape[1] // 3, 3],
         name="front_proj_xyz",
     )
-    front_ver_norm_batch = tf.placeholder(
+    front_ver_norm_batch = tf.compat.v1.placeholder(
         dtype=tf.float32,
         shape=[1, basis3dmm["basis_shape"].shape[1] // 3, 3],
         name="front_ver_norm",
@@ -86,41 +86,41 @@ def main(_):
     base_uv_batch = tf.constant(base_uv[np.newaxis, ...], name="base_uv")
 
     if FLAGS.is_mult_view:
-        left_image_batch = tf.placeholder(
+        left_image_batch = tf.compat.v1.placeholder(
             dtype=tf.float32, shape=[1, None, None, 3], name="left_image"
         )
-        left_image_batch_resized = tf.image.resize_images(
+        left_image_batch_resized = tf.image.resize(
             left_image_batch, (FLAGS.uv_size, FLAGS.uv_size)
         )
-        left_seg_batch = tf.placeholder(
+        left_seg_batch = tf.compat.v1.placeholder(
             dtype=tf.float32, shape=[1, None, None, 19], name="left_seg"
         )
-        left_proj_xyz_batch = tf.placeholder(
+        left_proj_xyz_batch = tf.compat.v1.placeholder(
             dtype=tf.float32,
             shape=[1, basis3dmm["basis_shape"].shape[1] // 3, 3],
             name="left_proj_xyz",
         )
-        left_ver_norm_batch = tf.placeholder(
+        left_ver_norm_batch = tf.compat.v1.placeholder(
             dtype=tf.float32,
             shape=[1, basis3dmm["basis_shape"].shape[1] // 3, 3],
             name="left_ver_norm",
         )
 
-        right_image_batch = tf.placeholder(
+        right_image_batch = tf.compat.v1.placeholder(
             dtype=tf.float32, shape=[1, None, None, 3], name="right_image"
         )
-        right_image_batch_resized = tf.image.resize_images(
+        right_image_batch_resized = tf.image.resize(
             right_image_batch, (FLAGS.uv_size, FLAGS.uv_size)
         )
-        right_seg_batch = tf.placeholder(
+        right_seg_batch = tf.compat.v1.placeholder(
             dtype=tf.float32, shape=[1, None, None, 19], name="right_seg"
         )
-        right_proj_xyz_batch = tf.placeholder(
+        right_proj_xyz_batch = tf.compat.v1.placeholder(
             dtype=tf.float32,
             shape=[1, basis3dmm["basis_shape"].shape[1] // 3, 3],
             name="right_proj_xyz",
         )
-        right_ver_norm_batch = tf.placeholder(
+        right_ver_norm_batch = tf.compat.v1.placeholder(
             dtype=tf.float32,
             shape=[1, basis3dmm["basis_shape"].shape[1] // 3, 3],
             name="right_ver_norm",
@@ -249,11 +249,11 @@ def main(_):
     uv_seg_mask_batch = tf.identity(uv_seg_mask_batch, name="uv_seg")
     uv_mask_batch = tf.identity(uv_mask_batch, name="uv_mask")
 
-    init_op = tf.global_variables_initializer()
+    init_op = tf.compat.v1.global_variables_initializer()
 
-    sess = tf.Session()
+    sess = tf.compat.v1.Session()
     if FLAGS.write_graph:
-        tf.train.write_graph(sess.graph_def, "", FLAGS.pb_path, as_text=True)
+        tf.io.write_graph(sess.graph_def, "", FLAGS.pb_path, as_text=True)
         exit()
 
     """ load data  """
@@ -347,4 +347,4 @@ if __name__ == "__main__":
     )
     flags.DEFINE_string("uv_path", "../resources/uv_bases", "basis3dmm path")
 
-    tf.app.run(main)
+    tf.compat.v1.app.run(main)

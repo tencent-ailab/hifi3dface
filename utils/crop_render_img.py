@@ -57,10 +57,10 @@ class crop_render_img(object):
         :return bbox_x2: scalar, tf.float32, x-coordinate of lower right corner in bbox
         :return bbox_y2: scalar, tf.float32, y-coordinate of lower right corner in bbox
         """
-        min_x = tf.reduce_min(landmark3d_batch[:, :, 0])
-        min_y = tf.reduce_min(landmark3d_batch[:, :, 1])
-        max_x = tf.reduce_max(landmark3d_batch[:, :, 0])
-        max_y = tf.reduce_max(landmark3d_batch[:, :, 1])
+        min_x = tf.reduce_min(input_tensor=landmark3d_batch[:, :, 0])
+        min_y = tf.reduce_min(input_tensor=landmark3d_batch[:, :, 1])
+        max_x = tf.reduce_max(input_tensor=landmark3d_batch[:, :, 0])
+        max_y = tf.reduce_max(input_tensor=landmark3d_batch[:, :, 1])
 
         c_x = min_x + a * (max_x - min_x)
         c_y = min_y + b * (max_y - min_y)
@@ -96,17 +96,17 @@ class crop_render_img(object):
         bbox_y1 = bbox_y1 + pad_constant
         bbox_y2 = bbox_y2 + pad_constant
         image_pad = tf.pad(
-            image,
-            [
+            tensor=image,
+            paddings=[
                 [0, 0],
                 [pad_constant, pad_constant],
                 [pad_constant, pad_constant],
                 [0, 0],
             ],
-            "CONSTANT",
+            mode="CONSTANT",
         )
         image_pad = image_pad[:, bbox_y1:bbox_y2, bbox_x1:bbox_x2, :]
-        image_crop = tf.image.resize_images(image_pad, (300, 300))
+        image_crop = tf.image.resize(image_pad, (300, 300))
         return image_crop
 
     @staticmethod

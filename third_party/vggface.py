@@ -17,7 +17,7 @@ class VGGFace(object):
         self.trainable = trainable
 
     def encoder(self, input_maps, net_name="VGGFace", reuse=False, data_format="nhwc"):
-        with tf.variable_scope(net_name) as scope:
+        with tf.compat.v1.variable_scope(net_name) as scope:
             if reuse:
                 scope.reuse_variables()
             # read meta info
@@ -27,7 +27,7 @@ class VGGFace(object):
             normalization = meta["normalization"]
             average_image = np.squeeze(normalization[0][0]["averageImage"][0][0][0][0])
             image_size = np.squeeze(normalization[0][0]["imageSize"][0][0])
-            input_maps = tf.image.resize_images(
+            input_maps = tf.image.resize(
                 input_maps, (image_size[0], image_size[1])
             )
 
@@ -38,7 +38,7 @@ class VGGFace(object):
             input_maps = input_maps - average_image
 
             if data_format == "nchw" or data_format == "NCHW":
-                input_maps = tf.transpose(input_maps, [0, 3, 1, 2])
+                input_maps = tf.transpose(a=input_maps, perm=[0, 3, 1, 2])
             current = input_maps
             network["inputs"] = input_maps  # no much use
             for layer in layers[0]:
@@ -55,13 +55,13 @@ class VGGFace(object):
                     kh, kw, kin, kout = kernel.shape
 
                     if data_format == "nhwc" or data_format == "NHWC":
-                        kernel_var = tf.get_variable(
+                        kernel_var = tf.compat.v1.get_variable(
                             name=name + "_weight",
                             dtype=tf.float32,
                             initializer=tf.constant(kernel),
                             trainable=self.trainable,
                         )
-                        bias_var = tf.get_variable(
+                        bias_var = tf.compat.v1.get_variable(
                             name=name + "_bias",
                             dtype=tf.float32,
                             initializer=tf.constant(bias),
@@ -70,8 +70,8 @@ class VGGFace(object):
 
                         if name[:2] != "fc":
                             conv = tf.nn.conv2d(
-                                current,
-                                kernel_var,
+                                input=current,
+                                filters=kernel_var,
                                 strides=(1, stride[0], stride[0], 1),
                                 padding=padding,
                             )
@@ -90,13 +90,13 @@ class VGGFace(object):
                             current = tf.reshape(current, [-1, 1, 1, kout])
                     else:
                         # kernel = np.transpose(kernel, [2,3,1,0])
-                        kernel_var = tf.get_variable(
+                        kernel_var = tf.compat.v1.get_variable(
                             name=name + "_weight",
                             dtype=tf.float32,
                             initializer=tf.constant(kernel),
                             trainable=self.trainable,
                         )
-                        bias_var = tf.get_variable(
+                        bias_var = tf.compat.v1.get_variable(
                             name=name + "_bias",
                             dtype=tf.float32,
                             initializer=tf.constant(bias),
@@ -104,8 +104,8 @@ class VGGFace(object):
                         )
 
                         conv = tf.nn.conv2d(
-                            current,
-                            kernel_var,
+                            input=current,
+                            filters=kernel_var,
                             strides=(1, 1, stride[0], stride[0]),
                             padding=padding,
                             data_format="NCHW",
@@ -118,15 +118,15 @@ class VGGFace(object):
                     stride = layer[0]["stride"][0][0]
                     pool = layer[0]["pool"][0][0]
                     if data_format == "nhwc" or data_format == "NHWC":
-                        current = tf.nn.max_pool(
-                            current,
+                        current = tf.nn.max_pool2d(
+                            input=current,
                             ksize=(1, pool[0], pool[1], 1),
                             strides=(1, stride[0], stride[0], 1),
                             padding="SAME",
                         )
                     else:
-                        current = tf.nn.max_pool(
-                            current,
+                        current = tf.nn.max_pool2d(
+                            input=current,
                             ksize=(1, 1, pool[0], pool[1]),
                             strides=(1, 1, stride[0], stride[0]),
                             padding="SAME",
@@ -153,5 +153,5 @@ def encoder(modelpath, images, train=True, reuse=False, data_format="NHWC"):
 
 if __name__ == "__main__":
     vggface = VGGFace("../../resources/vgg-face.mat")
-    inputs = tf.placeholder(tf.float32, [1, 224, 224, 3])
+    inputs = tf.compat.v1.placeholder(tf.float32, [1, 224, 224, 3])
     vggface.encoder(inputs, data_format="NHWC")

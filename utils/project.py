@@ -142,8 +142,8 @@ class Shader(object):
         harmonic_output_list = tf.split(harmonic_output, batch_size, axis=0)
         results = []
         for ho, shk in zip(harmonic_output_list, sh_kernels):
-            shk = tf.reshape(tf.transpose(tf.reshape(shk, [3, 9])), [1, 1, 9, 3])
-            res = tf.nn.conv2d(ho, shk, strides=[1, 1, 1, 1], padding="SAME")
+            shk = tf.reshape(tf.transpose(a=tf.reshape(shk, [3, 9])), [1, 1, 9, 3])
+            res = tf.nn.conv2d(input=ho, filters=shk, strides=[1, 1, 1, 1], padding="SAME")
             results.append(res)
         shading = tf.concat(results, axis=0)
 
@@ -156,7 +156,7 @@ class Shader(object):
             3 * [alpha_images > 0.5], axis=3, name="valid_rgb_values"
         )
 
-        rgb_images = tf.where(
+        rgb_images = tf.compat.v1.where(
             valid_rgb_values, rgb_images, background_images, name="rgb_images"
         )
 
@@ -198,7 +198,7 @@ class Projector(object):
             ver_normals: [batch, N, 3], vertex normals
         """
 
-        with tf.variable_scope(scope_name):
+        with tf.compat.v1.variable_scope(scope_name):
 
             v1_idx, v2_idx, v3_idx = tf.unstack(tri, 3, axis=-1)
             v1 = tf.gather(ver_xyz, v1_idx, axis=1, name="v1_tri")
@@ -206,10 +206,10 @@ class Projector(object):
             v3 = tf.gather(ver_xyz, v3_idx, axis=1, name="v3_tri")
 
             EPS = 1e-8
-            tri_normals = tf.cross(v2 - v1, v3 - v1)
-            tri_normals = tf.div(
+            tri_normals = tf.linalg.cross(v2 - v1, v3 - v1)
+            tri_normals = tf.compat.v1.div(
                 tri_normals,
-                (tf.norm(tri_normals, axis=-1, keep_dims=True) + EPS),
+                (tf.norm(tensor=tri_normals, axis=-1, keepdims=True) + EPS),
                 name="norm_tri",
             )
             tri_normals = tf.tile(tf.expand_dims(tri_normals, 2), [1, 1, 3, 1])
@@ -233,19 +233,19 @@ class Projector(object):
 
             ver_shape = ver_xyz.get_shape().as_list()
 
-            ver_normals = tf.get_variable(
+            ver_normals = tf.compat.v1.get_variable(
                 shape=ver_shape,
                 dtype=tf.float32,
-                initializer=tf.zeros_initializer(),
+                initializer=tf.compat.v1.zeros_initializer(),
                 name="ver_norm",
                 trainable=False,
             )
             init_normals = tf.zeros(shape=ver_shape, dtype=tf.float32)
-            assign_op = tf.assign(ver_normals, init_normals)
+            assign_op = tf.compat.v1.assign(ver_normals, init_normals)
             with tf.control_dependencies([assign_op]):
-                ver_normals = tf.scatter_nd_add(ver_normals, tri_inds, tri_normals)
+                ver_normals = tf.compat.v1.scatter_nd_add(ver_normals, tri_inds, tri_normals)
                 ver_normals = ver_normals / (
-                    tf.norm(ver_normals, axis=2, keep_dims=True) + EPS
+                    tf.norm(tensor=ver_normals, axis=2, keepdims=True) + EPS
                 )
 
             votes = tf.reshape(
@@ -254,26 +254,26 @@ class Projector(object):
             cnts = tf.reshape(
                 tf.concat([tri_cnts, tri_cnts, tri_cnts], axis=-1), [-1, 1]
             )
-            ver_votes = tf.get_variable(
+            ver_votes = tf.compat.v1.get_variable(
                 shape=ver_shape[:-1] + [1],
                 dtype=tf.float32,
-                initializer=tf.zeros_initializer(),
+                initializer=tf.compat.v1.zeros_initializer(),
                 name="ver_vote",
                 trainable=False,
             )
-            ver_cnts = tf.get_variable(
+            ver_cnts = tf.compat.v1.get_variable(
                 shape=ver_shape[:-1] + [1],
                 dtype=tf.float32,
-                initializer=tf.zeros_initializer(),
+                initializer=tf.compat.v1.zeros_initializer(),
                 name="ver_cnt",
                 trainable=False,
             )
             init_votes = tf.zeros(shape=ver_shape[:-1] + [1], dtype=tf.float32)
-            assign_op2 = tf.assign(ver_votes, init_votes)
-            assign_op3 = tf.assign(ver_cnts, init_votes)
+            assign_op2 = tf.compat.v1.assign(ver_votes, init_votes)
+            assign_op3 = tf.compat.v1.assign(ver_cnts, init_votes)
             with tf.control_dependencies([assign_op2, assign_op3]):
-                ver_votes = tf.scatter_nd_add(ver_votes, tri_inds, tri_votes)
-                ver_cnts = tf.scatter_nd_add(ver_cnts, tri_inds, tri_cnts)
+                ver_votes = tf.compat.v1.scatter_nd_add(ver_votes, tri_inds, tri_votes)
+                ver_cnts = tf.compat.v1.scatter_nd_add(ver_cnts, tri_inds, tri_cnts)
                 ver_votes = ver_votes / (ver_cnts + EPS)
 
                 ver_votes1 = tf.less(ver_votes, float(1.0))
@@ -331,7 +331,7 @@ class Projector(object):
         vertex_img = tf.matmul(ver_xyzw, trans_Mat)  # 1 x 20481 x 4
         cam_xyz = vertex_img[:, :, 0:3]  # 1 x 20481 x 3
 
-        K_img = tf.transpose(K_img, [0, 2, 1])  # 1 x 3 x 3
+        K_img = tf.transpose(a=K_img, perm=[0, 2, 1])  # 1 x 3 x 3
         proj_xyz_batch = tf.matmul(cam_xyz, K_img)  # 1 x 20481 x 3
         proj_xyz_depth_batch = tf.matmul(cam_xyz, K_img)  # 1 x 20481 x 3
 
@@ -352,7 +352,7 @@ class Projector(object):
                 axis=2,
             )  # 1 x 20481 x 1
         clip_z = tf.expand_dims(
-            tf.nn.l2_normalize(proj_xyz_batch[:, :, 2], dim=1, epsilon=1e-10), axis=2
+            tf.nn.l2_normalize(proj_xyz_batch[:, :, 2], axis=1, epsilon=1e-10), axis=2
         )
 
         clip_xyz = tf.concat([clip_x, clip_y, clip_z], axis=2)  # 1, 20481, 3
@@ -378,7 +378,7 @@ class Projector(object):
         depth_infor = tf.expand_dims(
             proj_xyz_depth_batch[:, :, 2], axis=2
         )  # 1 x 20481 x 1
-        with tf.variable_scope(name):
+        with tf.compat.v1.variable_scope(name):
             ver_norm, ver_contour_mask = Projector.get_ver_norm(cam_xyz, tri)
             norm_depth_infro = tf.concat(
                 [ver_norm, depth_infor, ver_contour_mask], axis=2
@@ -454,31 +454,31 @@ class Projector(object):
             axis=1,
         )
         tri_clip_xyzw = tf.gather_nd(clip_xyzw, tri_inds, name="tri_clip_xyzw")
-        ver_uv_clip_xyzw_sum = tf.get_variable(
+        ver_uv_clip_xyzw_sum = tf.compat.v1.get_variable(
             shape=[batch_size, len(vt_list), 4],
             dtype=tf.float32,
-            initializer=tf.zeros_initializer(),
+            initializer=tf.compat.v1.zeros_initializer(),
             name=var_scope_name + "ver_uv_clip_xyzw_sum",
             trainable=False,
         )
-        ver_uv_clip_xyzw_cnt = tf.get_variable(
+        ver_uv_clip_xyzw_cnt = tf.compat.v1.get_variable(
             shape=[batch_size, len(vt_list), 4],
             dtype=tf.float32,
-            initializer=tf.zeros_initializer(),
+            initializer=tf.compat.v1.zeros_initializer(),
             name=var_scope_name + "ver_uv_clip_xyzw_cnt",
             trainable=False,
         )
         init_ver_uv = tf.zeros(shape=[batch_size, len(vt_list), 4], dtype=tf.float32)
-        assign_op1 = tf.assign(ver_uv_clip_xyzw_sum, init_ver_uv)
-        assign_op2 = tf.assign(ver_uv_clip_xyzw_cnt, init_ver_uv)
+        assign_op1 = tf.compat.v1.assign(ver_uv_clip_xyzw_sum, init_ver_uv)
+        assign_op2 = tf.compat.v1.assign(ver_uv_clip_xyzw_cnt, init_ver_uv)
         with tf.control_dependencies([assign_op1, assign_op2]):
-            ver_uv_clip_xyzw_sum = tf.scatter_nd_add(
+            ver_uv_clip_xyzw_sum = tf.compat.v1.scatter_nd_add(
                 ver_uv_clip_xyzw_sum, tri_vt_inds, tri_clip_xyzw
             )
-            ver_uv_clip_xyzw_cnt = tf.scatter_nd_add(
+            ver_uv_clip_xyzw_cnt = tf.compat.v1.scatter_nd_add(
                 ver_uv_clip_xyzw_cnt, tri_vt_inds, tf.ones_like(tri_clip_xyzw)
             )
-            ver_uv_clip_xyzw = tf.div(ver_uv_clip_xyzw_sum, ver_uv_clip_xyzw_cnt + EPS)
+            ver_uv_clip_xyzw = tf.compat.v1.div(ver_uv_clip_xyzw_sum, ver_uv_clip_xyzw_cnt + EPS)
 
             uv_image, uv_alphas = rasterize_clip_space(
                 ver_uv_clip_xyzw, batch_UV, tri_vt, imageW, imageH, -1.0
@@ -543,7 +543,7 @@ class Projector(object):
         para_illum,
         var_scope_name,
     ):
-        with tf.variable_scope(var_scope_name):
+        with tf.compat.v1.variable_scope(var_scope_name):
             batch_size, _, _ = clip_xyzw.get_shape().as_list()
             aug_ver_attrs = tf.concat([ver_rgb, ver_mask], axis=2)
             attrs, _ = rasterize_clip_space(
@@ -631,7 +631,7 @@ class Projector(object):
 
             rr0 = (
                 tf.multiply(cos_theta, I)
-                + tf.multiply((1 - cos_theta), tf.matmul(n, tf.transpose(n, [0, 2, 1])))
+                + tf.multiply((1 - cos_theta), tf.matmul(n, tf.transpose(a=n, perm=[0, 2, 1])))
                 + tf.multiply(sin_theta, n_hat)
             )
 
@@ -649,7 +649,7 @@ class Projector(object):
         w = tf.concat([zeros, zeros, zeros, ones], axis=2)  # B * 1 * 4
         T = tf.concat([T, w], axis=1)  # B,4,4
 
-        T = tf.transpose(T, [0, 2, 1])
+        T = tf.transpose(a=T, perm=[0, 2, 1])
 
         return T
 
