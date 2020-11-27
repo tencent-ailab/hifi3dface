@@ -32,7 +32,7 @@ SOFTWARE.
 unwrap the input images into UV maps, regardless of the input image size and the UV map size
 """
 from absl import flags
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 import sys
 import os
@@ -46,7 +46,8 @@ import utils.unwrap_utils as unwrap_utils
 from utils.basis import load_3dmm_basis, get_geometry
 from utils.const import *
 from utils.misc import tf_blend_uv
-
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.disable_v2_behavior()
 
 def main(_):
     # load 3dmm
@@ -295,6 +296,7 @@ def main(_):
                 },
             )
         else:
+            print(info["proj_xyz"].shape[0])
             assert info["proj_xyz"].shape[0] >= 1
             if FLAGS.is_orig_img:
                 front_img = info["ori_img"][0][np.newaxis, ...]

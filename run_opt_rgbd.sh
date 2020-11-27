@@ -1,7 +1,7 @@
 
 #!/bin/bash
 GPU_NO=0;
-is_bfm="True"
+is_bfm="False"
 
 # # constants
 basic_path=/root/models/mnt/3DMM/files/;
