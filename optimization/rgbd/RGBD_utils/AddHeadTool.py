@@ -362,8 +362,8 @@ class AddHeadTool(object):
         in_mouth = np.mean(vertex_new[:, mouth_idx], 1)
         vector_xueer = xueer_mouth - xuuer_mideye
         vector_in = in_mouth - in_mideye
-        angle_xueer = math.atan(vector_xueer[1] / vector_xueer[2])
-        angle_in = math.atan(vector_in[1] / vector_in[2])
+        angle_xueer = math.atan(vector_xueer[2] / np.abs(vector_xueer[1]))
+        angle_in = math.atan(vector_in[2] / np.abs(vector_in[1]))
         change_y_angle = angle_in - angle_xueer
         rr = np.array(
             [
