@@ -86,8 +86,8 @@ def rasterize_clip_space(
         raise ValueError("Image height must be > 0.")
     if len(vertices.shape) != 3:
         raise ValueError("The vertex buffer must be 3D.")
-    batch_size = vertices.shape[0].value
-    vertex_count = vertices.shape[1].value
+    batch_size = vertices.shape.as_list()[0]
+    vertex_count = vertices.shape.as_list()[1]
 
     # We map the coordinates to normalized device coordinates before passing
     # the scene to the rendering kernel to keep as many ops in tensorflow as
@@ -129,7 +129,7 @@ def rasterize_clip_space(
         # Gathers the vertex indices now because the indices don't contain a batch
         # identifier, and reindexes the vertex ids to point to a (batch,vertex_id)
         vertex_ids = tf.gather(triangles, tf.reshape(triangle_ids, [-1]))
-        reindexed_ids = tf.add(vertex_ids, im * vertices.shape[1].value)
+        reindexed_ids = tf.add(vertex_ids, im * vertices.shape.as_list()[1])
         per_image_vertex_ids.append(reindexed_ids)
 
     uncorrected_barycentric_coordinates = tf.concat(
@@ -147,7 +147,7 @@ def rasterize_clip_space(
     # Barycentric interpolation is linear in the reciprocal of the homogeneous
     # W coordinate, so we use these weights to correct for the effects of
     # perspective distortion after rasterization.
-    perspective_distortion_weights = tf.reciprocal(
+    perspective_distortion_weights = tf.math.reciprocal(
         tf.reshape(clip_space_points_w, [-1])
     )
     corner_distortion_weights = tf.gather(perspective_distortion_weights, vertex_ids)
@@ -160,7 +160,7 @@ def rasterize_clip_space(
         uncorrected_barycentric_coordinates, corner_distortion_weights
     )
     barycentric_reweighting_factor = tf.reduce_sum(
-        weighted_barycentric_coordinates, axis=1
+        input_tensor=weighted_barycentric_coordinates, axis=1
     )
 
     corrected_barycentric_coordinates = tf.divide(
@@ -176,7 +176,7 @@ def rasterize_clip_space(
     weighted_vertex_attributes = tf.multiply(
         corner_attributes, tf.expand_dims(corrected_barycentric_coordinates, axis=2)
     )
-    summed_attributes = tf.reduce_sum(weighted_vertex_attributes, axis=1)
+    summed_attributes = tf.reduce_sum(input_tensor=weighted_vertex_attributes, axis=1)
     attribute_images = tf.reshape(
         summed_attributes, [batch_size, image_height, image_width, -1]
     )
@@ -184,7 +184,7 @@ def rasterize_clip_space(
     # Barycentric coordinates should approximately sum to one where there is
     # rendered geometry, but be exactly zero where there is not.
     alphas = tf.clip_by_value(
-        tf.reduce_sum(2.0 * corrected_barycentric_coordinates, axis=1), 0.0, 1.0
+        tf.reduce_sum(input_tensor=2.0 * corrected_barycentric_coordinates, axis=1), 0.0, 1.0
     )
     alphas = tf.reshape(alphas, [batch_size, image_height, image_width, 1])
 

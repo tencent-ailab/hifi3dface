@@ -60,8 +60,8 @@ import shutil
 
 
 def detect_2Dlmk_all_imgs(graph_file, img_dir, lmk3D_txt_path, lmk2D_txt_path):
-    with tf.Graph().as_default():
-        graph_def = tf.GraphDef()
+    with tf.Graph().as_default(), tf.device('/device:XLA_CPU:0'):
+        graph_def = tf.compat.v1.GraphDef()
         graph_file = graph_file
 
         with open(graph_file, "rb") as f:
@@ -69,8 +69,8 @@ def detect_2Dlmk_all_imgs(graph_file, img_dir, lmk3D_txt_path, lmk2D_txt_path):
             graph_def.ParseFromString(f.read())
             tf.import_graph_def(graph_def, name="")
 
-        with tf.Session() as sess:
-            tf.initialize_all_variables().run()
+        with tf.compat.v1.Session() as sess:
+            tf.compat.v1.initialize_all_variables().run()
 
             fopen = open(lmk2D_txt_path, "w")
 
@@ -155,8 +155,8 @@ def face_seg(graph_file, lmk3D_crop_txt_path, out_crop_dir, seg_dir):
 
     landmarks3D, images_name = load_landmark(lmk3D_crop_txt_path, 86)
 
-    with tf.Graph().as_default():
-        graph_def = tf.GraphDef()
+    with tf.Graph().as_default(), tf.device('/device:XLA_CPU:0'):
+        graph_def = tf.compat.v1.GraphDef()
         graph_file = graph_file
 
         with open(graph_file, "rb") as f:
@@ -164,8 +164,8 @@ def face_seg(graph_file, lmk3D_crop_txt_path, out_crop_dir, seg_dir):
             graph_def.ParseFromString(f.read())
             tf.import_graph_def(graph_def, name="")
 
-        with tf.Session() as sess:
-            tf.initialize_all_variables().run()
+        with tf.compat.v1.Session() as sess:
+            tf.compat.v1.initialize_all_variables().run()
             count = 0
             for i in range(0, len(images_name)):
                 img_name = images_name[i]
@@ -204,14 +204,14 @@ def prepare_test_data_RGB(img_dir, out_dir):
     names_list = detect_face_with_mtcnn.detect_with_MTCNN(img_dir, mtcnn_dir, pb_path)
 
     print("start detect 86pt 3D lmk")
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     pb_path = os.path.join(FLAGS.pb_path, "lmk3D_86_model.pb")
     detect_3D_landmark.detect_lmk86(
         img_dir, mtcnn_dir, lmk3D_ori_txt_path, names_list, pb_path
     )
 
     print("start detect 68pt 2D lmk")  # need to transfer RGB in the function
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     pb_path = os.path.join(FLAGS.pb_path, "lmk2D_68_model.pb")
     detect_2Dlmk_all_imgs(
         pb_path, img_dir, lmk3D_ori_txt_path, lmk2D_ori_txt_path
@@ -229,7 +229,7 @@ def prepare_test_data_RGB(img_dir, out_dir):
     )
 
     print("start face seg")  # need to transfer RGB in the function
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     pb_path = os.path.join(FLAGS.pb_path, "faceseg_model.pb")
     face_seg(pb_path, lmk3D_crop_txt_path, crop_dir, seg_dir)
 
@@ -277,14 +277,14 @@ def prepare_test_data_RGBD(img_dir, out_dir):
     )
 
     print("start detect 86pt 3D lmk")
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     pb_path = os.path.join(FLAGS.pb_path, "lmk3D_86_model.pb")
     detect_3D_landmark.detect_lmk86(
         img_dir, mtcnn_dir, lmk3D_ori_txt_path, names_list, pb_path
     )
 
     print("start detect 68pt 2D lmk")  # need to transfer RGB in the function
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     pb_path = os.path.join(FLAGS.pb_path, "lmk2D_68_model.pb")
     detect_2Dlmk_all_imgs(
         pb_path, img_dir, lmk3D_ori_txt_path, lmk2D_ori_txt_path
@@ -302,7 +302,7 @@ def prepare_test_data_RGBD(img_dir, out_dir):
     )
 
     print("start face seg")  # need to transfer RGB in the function
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     pb_path = os.path.join(FLAGS.pb_path, "faceseg_model.pb")
     face_seg(pb_path, lmk3D_crop_txt_path, crop_dir, seg_dir)
 

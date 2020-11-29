@@ -98,20 +98,20 @@ def main(_):
     # save parameters
     save_params()
 
-    mask_batch = tf.placeholder(
+    mask_batch = tf.compat.v1.placeholder(
         dtype=tf.float32, shape=[1, 512, 512, 1], name="uv_mask"
     )
-    tex_batch = tf.placeholder(dtype=tf.float32, shape=[1, 512, 512, 3], name="uv_tex")
+    tex_batch = tf.compat.v1.placeholder(dtype=tf.float32, shape=[1, 512, 512, 3], name="uv_tex")
 
-    var_mask_batch = tf.get_variable(
+    var_mask_batch = tf.compat.v1.get_variable(
         shape=[1, 512, 512, 1], dtype=tf.float32, name="var_mask", trainable=False
     )
-    var_tex_batch = tf.get_variable(
+    var_tex_batch = tf.compat.v1.get_variable(
         shape=[1, 512, 512, 3], dtype=tf.float32, name="var_tex", trainable=False
     )
 
     assign_op = tf.group(
-        [tf.assign(var_mask_batch, mask_batch), tf.assign(var_tex_batch, tex_batch)],
+        [tf.compat.v1.assign(var_mask_batch, mask_batch), tf.compat.v1.assign(var_tex_batch, tex_batch)],
         name="assign_op",
     )
 
@@ -129,9 +129,9 @@ def main(_):
     para_uv_dict = {}
     for region_name in uv_region_bases:
         region_basis = uv_region_bases[region_name]
-        para = tf.get_variable(
+        para = tf.compat.v1.get_variable(
             shape=[1, region_basis["basis"].shape[0]],
-            initializer=tf.zeros_initializer(),
+            initializer=tf.compat.v1.zeros_initializer(),
             name="para_" + region_name,
         )
         para_uv_dict[region_name] = para
@@ -170,14 +170,14 @@ def main(_):
         tot_loss = tot_loss + uv_reg_tex_loss * FLAGS.uv_reg_tex_weight
         loss_str = loss_str + ";reg:{}"
 
-    optim = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+    optim = tf.compat.v1.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
     train_op = optim.minimize(tot_loss, name="train_op")
-    init_op = tf.global_variables_initializer()
+    init_op = tf.compat.v1.global_variables_initializer()
 
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
 
         if FLAGS.write_graph:
-            tf.train.write_graph(sess.graph_def, "", FLAGS.pb_path, as_text=True)
+            tf.io.write_graph(sess.graph_def, "", FLAGS.pb_path, as_text=True)
             exit()
 
         uv_paths = sorted(glob.glob(os.path.join(FLAGS.data_dir, "*tex.png")))

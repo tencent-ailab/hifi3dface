@@ -38,7 +38,7 @@ class TF_LaplacianPyramid(object):
         out_channel_list = []
         for cur_channel in channel_list:
             out_channel = tf.nn.conv2d(
-                cur_channel, kernel, strides=strides, padding=padding
+                input=cur_channel, filters=kernel, strides=strides, padding=padding
             )
             out_channel_list.append(out_channel)
         out_channels = tf.concat(out_channel_list, axis=-1)
@@ -59,14 +59,14 @@ class TF_LaplacianPyramid(object):
             temp = pyramids[i - 1]
             _, rows, cols, channels = temp.get_shape().as_list()
             if rows % 2 == 1:
-                temp = tf.pad(temp, [(0, 0), (0, 1), (0, 0), (0, 0)])
+                temp = tf.pad(tensor=temp, paddings=[(0, 0), (0, 1), (0, 0), (0, 0)])
                 rows += 1
             if cols % 2 == 1:
-                temp = tf.pad(temp, [(0, 0), (0, 0), (0, 1), (0, 0)])
+                temp = tf.pad(tensor=temp, paddings=[(0, 0), (0, 0), (0, 1), (0, 0)])
                 cols += 1
             temp = tf.reshape(temp, [-1, rows // 2, 2, cols // 2, 2, channels])
             temp = temp[:, :, 0, :, 0, :]
-            temp = tf.pad(temp, [(0, 0), (2, 2), (2, 2), (0, 0)], "REFLECT")
+            temp = tf.pad(tensor=temp, paddings=[(0, 0), (2, 2), (2, 2), (0, 0)], mode="REFLECT")
             temp = TF_LaplacianPyramid.conv_depthwise(
                 temp, kernel, [1, 1, 1, 1], "VALID"
             )
@@ -96,23 +96,23 @@ class TF_LaplacianPyramid(object):
         pyramids = []
         cur_image = image
         for i in range(n_level - 1):
-            temp = tf.pad(cur_image, [(0, 0), (2, 2), (2, 2), (0, 0)], "REFLECT")
+            temp = tf.pad(tensor=cur_image, paddings=[(0, 0), (2, 2), (2, 2), (0, 0)], mode="REFLECT")
             temp = TF_LaplacianPyramid.conv_depthwise(
                 temp, kernel, [1, 1, 1, 1], "VALID"
             )
             _, rows, cols, channels = temp.get_shape().as_list()
             if rows % 2 == 1:
-                temp = tf.pad(temp, [(0, 0), (0, 1), (0, 0), (0, 0)])
+                temp = tf.pad(tensor=temp, paddings=[(0, 0), (0, 1), (0, 0), (0, 0)])
                 rows += 1
             if cols % 2 == 1:
-                temp = tf.pad(temp, [(0, 0), (0, 0), (0, 1), (0, 0)])
+                temp = tf.pad(tensor=temp, paddings=[(0, 0), (0, 0), (0, 1), (0, 0)])
                 cols += 1
             temp = tf.reshape(temp, [-1, rows // 2, 2, cols // 2, 2, channels])
             temp = temp[:, :, 0, :, 0, :]
             dn_temp = temp
             temp = TF_LaplacianPyramid.upSample(temp)
             temp = temp[:, :rows, :cols, :]
-            temp = tf.pad(temp, [(0, 0), (2, 2), (2, 2), (0, 0)], "REFLECT")
+            temp = tf.pad(tensor=temp, paddings=[(0, 0), (2, 2), (2, 2), (0, 0)], mode="REFLECT")
             temp = TF_LaplacianPyramid.conv_depthwise(
                 temp, kernel, [1, 1, 1, 1], "VALID"
             )
@@ -134,7 +134,7 @@ class TF_LaplacianPyramid(object):
             temp = TF_LaplacianPyramid.upSample(temp)
             _, rows, cols, _ = pyramids[i - 1].get_shape().as_list()
             temp = temp[:, :rows, :cols, :]
-            temp = tf.pad(temp, [(0, 0), (2, 2), (2, 2), (0, 0)], "REFLECT")
+            temp = tf.pad(tensor=temp, paddings=[(0, 0), (2, 2), (2, 2), (0, 0)], mode="REFLECT")
             temp = TF_LaplacianPyramid.conv_depthwise(
                 temp, kernel, [1, 1, 1, 1], "VALID"
             )

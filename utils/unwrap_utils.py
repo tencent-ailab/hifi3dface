@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import numpy as np
 import sys
 import os
@@ -42,6 +42,12 @@ import third_party.rasterize_triangles as rasterize
 from utils.basis import load_3dmm_basis, get_geometry
 from utils.const import *
 from utils.misc import tf_blend_uv
+
+
+tf.compat.v1.disable_eager_execution()
+tf.compat.v1.disable_v2_behavior()
+
+
 
 
 def warp_img_to_uv(img_attrs, ver_proj_xy, tri_v, tri_vt, vt_list, uv_size):

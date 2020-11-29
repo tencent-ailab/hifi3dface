@@ -3,8 +3,10 @@ GPU_NO=0;
 is_bfm="False"
 
 # # constants
-basic_path=$(pwd)/3DMM/files/;
-resources_path=$(pwd)/resources/;
+basic_path=/root/models/mnt/3DMM/files;
+resources_path=/root/models/mnt/resources;
+
+
 
 uv_base="$basic_path/AI-NEXT-Albedo-Global.mat"
 uv_regional_pyramid_base="$basic_path/AI-NEXT-AlbedoNormal-RPB/"
@@ -19,7 +21,7 @@ vggpath="$resources_path/vgg-face.mat"
 pb_path=$resources_path/PB/
 
 # # data directories
-ROOT_DIR=$(pwd)/test_data/RGB/test1/single_img/;
+ROOT_DIR=/root/models/mnt/test_data/test_data/RGB/test1/single_img/;
 img_dir=$ROOT_DIR
 
 ########################################################
@@ -28,7 +30,7 @@ cd ./data_prepare
 
 prepare_dir="$ROOT_DIR/prepare_rgb"
 
-python -u run_data_preparation.py \
+python3 -u run_data_preparation.py \
         --GPU_NO=${GPU_NO}  \
         --mode='test_RGB' \
         --pb_path=${pb_path} \
@@ -69,7 +71,7 @@ lmk_struct_weight=0
 num_of_img=1
 project_type="Pers"
 
-python run_RGB_opt.py \
+python3 run_RGB_opt.py \
 --GPU_NO=${GPU_NO} \
 --is_bfm=${is_bfm} \
 --basis3dmm_path=${shape_exp_bases} \
@@ -103,7 +105,7 @@ if [ $is_bfm == "False" ];then
     cd ./texture
 
     echo "step0: start unwrap";
-    CUDA_VISIBLE_DEVICES=${GPU_NO} python -u step0_unwrapper.py \
+    CUDA_VISIBLE_DEVICES=${GPU_NO} python3 -u step0_unwrapper.py \
         --basis3dmm_path=${shape_exp_bases} \
         --uv_path=${uv_base} \
         --uv_size=512 \
@@ -115,7 +117,7 @@ if [ $is_bfm == "False" ];then
     if [ "$?" -ne 0 ]; then echo "unwrap failed"; exit 1; fi
 
     echo "step1: start fit AlbedoNormal_RPB";
-    CUDA_VISIBLE_DEVICES=${GPU_NO} python -u step1_fit_AlbedoNormal_RPB.py \
+    CUDA_VISIBLE_DEVICES=${GPU_NO} python3 -u step1_fit_AlbedoNormal_RPB.py \
         --basis3dmm_path=${shape_exp_bases} \
         --uv_path=${uv_regional_pyramid_base} \
         --write_graph=False \
@@ -129,14 +131,14 @@ if [ $is_bfm == "False" ];then
     if [ "$?" -ne 0 ]; then echo "fit UV failed"; exit 1; fi
 
     echo "step2: generate tex";
-    CUDA_VISIBLE_DEVICES=${GPU_NO} python -u step2_pix2pix.py --mode texture --func test --pb_path ${pb_path}/pix2pix_tex.pb \
+    CUDA_VISIBLE_DEVICES=${GPU_NO} python3 -u step2_pix2pix.py --mode texture --func test --pb_path ${pb_path}/pix2pix_tex.pb \
         --input_dir=${ROOT_DIR}/fit_unwrap \
         --output_dir=${ROOT_DIR}/pix2pix
 
     if [ "$?" -ne 0 ]; then echo "generate tex failed"; exit 1; fi
 
     echo "step2: generate norm";
-    CUDA_VISIBLE_DEVICES=${GPU_NO} python -u step2_pix2pix.py --mode normal --func test --pb_path ${pb_path}/pix2pix_norm.pb \
+    CUDA_VISIBLE_DEVICES=${GPU_NO} python3 -u step2_pix2pix.py --mode normal --func test --pb_path ${pb_path}/pix2pix_norm.pb \
         --input_dir=${ROOT_DIR}/fit_unwrap \
         --output_dir=${ROOT_DIR}/pix2pix
 
@@ -148,7 +150,7 @@ if [ $is_bfm == "False" ];then
     OUT_DIR=$ROOT_DIR/pix2pix_convert
 
     echo "step3: convert_texture_domain";
-    python -u step3_convert_texture_domain.py \
+    python3 -u step3_convert_texture_domain.py \
         --input_fit_dir=$FIT_DIR \
         --input_pix2pix_dir=$PIX_DIR \
         --input_unwrap_dir=$UNWRAP_DIR \

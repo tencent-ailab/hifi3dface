@@ -71,8 +71,8 @@ class Losses(object):
             mask = tf.ones_like(a)
             binary_mask = tf.ones_like(a)
         else:
-            mask = tf.where(tf.greater(mask, EPS), mask, tf.zeros_like(mask))
-            binary_mask = tf.where(
+            mask = tf.compat.v1.where(tf.greater(mask, EPS), mask, tf.zeros_like(mask))
+            binary_mask = tf.compat.v1.where(
                 tf.greater(mask, EPS), tf.ones_like(mask), tf.zeros_like(mask)
             )
 
@@ -82,20 +82,20 @@ class Losses(object):
 
         if opt == "l1":
             error = tf.clip_by_value(tf.abs(a - b), 0, max_val) * mask
-            error_sum = tf.reduce_sum(error, axis=axes[1:])
-            count = tf.reduce_sum(binary_mask, axis=axes[1:])
-            dist = tf.reduce_mean(tf.div(error_sum, count + EPS), name="l1")
+            error_sum = tf.reduce_sum(input_tensor=error, axis=axes[1:])
+            count = tf.reduce_sum(input_tensor=binary_mask, axis=axes[1:])
+            dist = tf.reduce_mean(input_tensor=tf.compat.v1.div(error_sum, count + EPS), name="l1")
         elif opt == "l2":
             error = tf.clip_by_value(tf.square(a - b), 0, max_val) * mask
-            error_sum = tf.reduce_sum(error, axis=axes[1:])
-            count = tf.reduce_sum(binary_mask, axis=axes[1:])
-            dist = tf.reduce_mean(tf.div(error_sum, count + EPS), name="l2")
+            error_sum = tf.reduce_sum(input_tensor=error, axis=axes[1:])
+            count = tf.reduce_sum(input_tensor=binary_mask, axis=axes[1:])
+            dist = tf.reduce_mean(input_tensor=tf.compat.v1.div(error_sum, count + EPS), name="l2")
         elif opt == "l21":
             error = tf.clip_by_value(tf.square(a - b), 0, max_val) * mask
-            error_sum = tf.reduce_sum(error, axis=-1, keepdims=True)
-            error_sum = tf.reduce_sum(tf.sqrt(error_sum + EPS), axis=axes[1:])
-            count = tf.reduce_sum(binary_mask, axis=axes[1:])
-            dist = tf.reduce_mean(tf.div(error_sum, count + EPS), name="l21")
+            error_sum = tf.reduce_sum(input_tensor=error, axis=-1, keepdims=True)
+            error_sum = tf.reduce_sum(input_tensor=tf.sqrt(error_sum + EPS), axis=axes[1:])
+            count = tf.reduce_sum(input_tensor=binary_mask, axis=axes[1:])
+            dist = tf.reduce_mean(input_tensor=tf.compat.v1.div(error_sum, count + EPS), name="l21")
         else:
             raise Exception("Invalid loss option")
 
@@ -109,8 +109,8 @@ class Losses(object):
 
         front_err = tf.square(front_gt_depth - front_render_depth)
         front_err = tf.clip_by_value(front_err, 0, 16)
-        front_sum_err = tf.reduce_sum(front_err * front_depth_mask)
-        front_mean_err = tf.div(front_sum_err, tf.reduce_sum(front_depth_mask))
+        front_sum_err = tf.reduce_sum(input_tensor=front_err * front_depth_mask)
+        front_mean_err = tf.compat.v1.div(front_sum_err, tf.reduce_sum(input_tensor=front_depth_mask))
 
         left_gt_depth = gt_depth[1]
         left_render_depth = render_depth[1]
@@ -118,8 +118,8 @@ class Losses(object):
 
         left_err = tf.square(left_gt_depth - left_render_depth)
         left_err = tf.clip_by_value(left_err, 0, 16)
-        left_sum_err = tf.reduce_sum(left_err * left_depth_mask)
-        left_mean_err = tf.div(left_sum_err, tf.reduce_sum(left_depth_mask))
+        left_sum_err = tf.reduce_sum(input_tensor=left_err * left_depth_mask)
+        left_mean_err = tf.compat.v1.div(left_sum_err, tf.reduce_sum(input_tensor=left_depth_mask))
 
         right_gt_depth = gt_depth[2]
         right_render_depth = render_depth[2]
@@ -127,8 +127,8 @@ class Losses(object):
 
         right_err = tf.square(right_gt_depth - right_render_depth)
         right_err = tf.clip_by_value(right_err, 0, 16)
-        right_sum_err = tf.reduce_sum(right_err * right_depth_mask)
-        right_mean_err = tf.div(right_sum_err, tf.reduce_sum(right_depth_mask))
+        right_sum_err = tf.reduce_sum(input_tensor=right_err * right_depth_mask)
+        right_mean_err = tf.compat.v1.div(right_sum_err, tf.reduce_sum(input_tensor=right_depth_mask))
 
         loss = front_mean_err + left_mean_err + right_mean_err
 
@@ -139,8 +139,8 @@ class Losses(object):
 
         bottom_err = tf.square(bottom_gt_depth - bottom_render_depth)
         bottom_err = tf.clip_by_value(bottom_err, 0, 4)
-        bottom_sum_err = tf.reduce_sum(bottom_err * bottom_depth_mask)
-        bottom_mean_err = tf.div(bottom_sum_err, tf.reduce_sum(bottom_depth_mask))
+        bottom_sum_err = tf.reduce_sum(input_tensor=bottom_err * bottom_depth_mask)
+        bottom_mean_err = tf.compat.v1.div(bottom_sum_err, tf.reduce_sum(input_tensor=bottom_depth_mask))
 
         loss = loss + bottom_mean_err
 
@@ -148,13 +148,13 @@ class Losses(object):
 
     @staticmethod
     def weighted_landmark3d_loss(gt_landmark, pred_landmark):
-        gt_landmark = tf.where(
-            tf.logical_or(tf.is_nan(gt_landmark), tf.is_nan(pred_landmark)),
+        gt_landmark = tf.compat.v1.where(
+            tf.logical_or(tf.math.is_nan(gt_landmark), tf.math.is_nan(pred_landmark)),
             tf.zeros_like(gt_landmark),
             gt_landmark,
         )
-        pred_landmark = tf.where(
-            tf.logical_or(tf.is_nan(gt_landmark), tf.is_nan(pred_landmark)),
+        pred_landmark = tf.compat.v1.where(
+            tf.logical_or(tf.math.is_nan(gt_landmark), tf.math.is_nan(pred_landmark)),
             tf.zeros_like(gt_landmark),
             pred_landmark,
         )
@@ -194,21 +194,21 @@ class Losses(object):
 
         lmk_weight = np.reshape(lmk_weight, [1, 86, 1])
         lmk_loss = tf.reduce_mean(
-            tf.square(gt_landmark - pred_landmark) * lmk_weight,
+            input_tensor=tf.square(gt_landmark - pred_landmark) * lmk_weight,
             name="loss/weighted_landmark_loss",
         )
         return lmk_loss
 
     @staticmethod
     def photo_loss(gt_image, render_image, image_mask):
-        with tf.name_scope("loss/photo"):
+        with tf.compat.v1.name_scope("loss/photo"):
             loss = Losses.calc_dist(gt_image, render_image, "l1", image_mask, 240)
         return loss
 
     @staticmethod
     def ws_photo_loss(gt_image, render_image, image_mask):
-        gray_gt_image = tf.reduce_mean(gt_image, axis=3, keepdims=True)
-        ws_mask = tf.div(1.0, 1 + tf.exp((gray_gt_image * 255.0 - 170) / 20.0))
+        gray_gt_image = tf.reduce_mean(input_tensor=gt_image, axis=3, keepdims=True)
+        ws_mask = tf.compat.v1.div(1.0, 1 + tf.exp((gray_gt_image * 255.0 - 170) / 20.0))
         loss = Losses.calc_dist(
             gt_image, render_image, "l21", image_mask * ws_mask, 100
         )
@@ -216,7 +216,7 @@ class Losses(object):
 
     @staticmethod
     def reg_loss(para):
-        with tf.name_scope("loss/reg"):
+        with tf.compat.v1.name_scope("loss/reg"):
             loss = Losses.calc_dist(tf.zeros_like(para), para, "l2")
         return loss
 
@@ -228,7 +228,7 @@ class Losses(object):
         normal_z = tf.reshape(tf.split(norm_landmark, 3, axis=2)[-1], [-1, N])
 
         standard_landmark_losses = tf.reduce_mean(
-            tf.square(gt_landmark - pred_landmark), axis=2
+            input_tensor=tf.square(gt_landmark - pred_landmark), axis=2
         )
 
         invisible_losses = []
@@ -243,10 +243,10 @@ class Losses(object):
             gt_lmk = gt_landmark[:, i : (i + 1), :]
 
             loss = tf.reduce_sum(
-                tf.square(gt_lmk - ver_xy) * ver_mask + MAX * (1 - ver_mask), axis=-1
+                input_tensor=tf.square(gt_lmk - ver_xy) * ver_mask + MAX * (1 - ver_mask), axis=-1
             )
-            loss = tf.reduce_min(loss, axis=1) * lmk_weight[i]
-            loss = tf.where(
+            loss = tf.reduce_min(input_tensor=loss, axis=1) * lmk_weight[i]
+            loss = tf.compat.v1.where(
                 tf.greater(loss, float(7.0 / 224 * 300)),
                 float(7.0 / 224 * 300) * tf.ones_like(loss),
                 loss,
@@ -255,10 +255,10 @@ class Losses(object):
 
         invisible_losses = tf.reshape(tf.stack(invisible_losses, axis=0), [-1, 18])
 
-        losses = tf.where(
+        losses = tf.compat.v1.where(
             tf.greater(normal_z, 0.0), standard_landmark_losses, invisible_losses
         )
-        loss = tf.reduce_mean(losses, name="landmark2d_loss")
+        loss = tf.reduce_mean(input_tensor=losses, name="landmark2d_loss")
         return loss
 
     @staticmethod
@@ -277,11 +277,11 @@ class Losses(object):
         )
         if data_format == "NHWC":
             features = tf.split(
-                tf.reduce_mean(layers[layer_name], axis=(1, 2)), N_group, axis=0
+                tf.reduce_mean(input_tensor=layers[layer_name], axis=(1, 2)), N_group, axis=0
             )
         else:
             features = tf.split(
-                tf.reduce_mean(layers[layer_name], axis=(2, 3)), N_group, axis=0
+                tf.reduce_mean(input_tensor=layers[layer_name], axis=(2, 3)), N_group, axis=0
             )
         gt_feature = features[0]
         loss = float(0.0)
@@ -415,27 +415,27 @@ class Losses(object):
 
         pair_list = np.array(list(pair_set))
 
-        gt_landmark = tf.where(
-            tf.is_nan(gt_landmark), tf.zeros_like(gt_landmark), gt_landmark
+        gt_landmark = tf.compat.v1.where(
+            tf.math.is_nan(gt_landmark), tf.zeros_like(gt_landmark), gt_landmark
         )
-        pred_landmark = tf.where(
-            tf.is_nan(gt_landmark), tf.zeros_like(gt_landmark), pred_landmark
+        pred_landmark = tf.compat.v1.where(
+            tf.math.is_nan(gt_landmark), tf.zeros_like(gt_landmark), pred_landmark
         )
 
         gt_landmark_a = tf.gather(gt_landmark, pair_list[:, 0], axis=1)
         gt_landmark_b = tf.gather(gt_landmark, pair_list[:, 1], axis=1)
         gt_landmark_dist = tf.sqrt(
-            tf.reduce_mean(tf.square(gt_landmark_a - gt_landmark_b), axis=-1)
+            tf.reduce_mean(input_tensor=tf.square(gt_landmark_a - gt_landmark_b), axis=-1)
         )
 
         pred_landmark_a = tf.gather(pred_landmark, pair_list[:, 0], axis=1)
         pred_landmark_b = tf.gather(pred_landmark, pair_list[:, 1], axis=1)
         pred_landmark_dist = tf.sqrt(
-            tf.reduce_mean(tf.square(pred_landmark_a - pred_landmark_b), axis=-1)
+            tf.reduce_mean(input_tensor=tf.square(pred_landmark_a - pred_landmark_b), axis=-1)
         )
 
         dist = tf.reduce_mean(
-            tf.square(gt_landmark_dist - pred_landmark_dist),
+            input_tensor=tf.square(gt_landmark_dist - pred_landmark_dist),
             name="loss/landmark_structure_distance",
         )
         return dist
@@ -445,15 +445,15 @@ class Losses(object):
         _, height, width, _ = uv_rgb.get_shape().as_list()
         if uv_weight_mask is None:
             uv_weight_mask = tf.ones_like(uv_mask)
-        with tf.name_scope("loss/uv_tv_loss"):
+        with tf.compat.v1.name_scope("loss/uv_tv_loss"):
             dy_rgb = uv_rgb[:, : (height - 1), :, :] - uv_rgb[:, 1:, :, :]
-            dy_rgb = tf.pad(dy_rgb, ((0, 0), (1, 0), (0, 0), (0, 0)))
+            dy_rgb = tf.pad(tensor=dy_rgb, paddings=((0, 0), (1, 0), (0, 0), (0, 0)))
 
             dx_rgb = uv_rgb[:, :, : (width - 1), :] - uv_rgb[:, :, 1:, :]
-            dx_rgb = tf.pad(dx_rgb, ((0, 0), (0, 0), (1, 0), (0, 0)))
+            dx_rgb = tf.pad(tensor=dx_rgb, paddings=((0, 0), (0, 0), (1, 0), (0, 0)))
 
             dxy_rgb = uv_rgb[:, : (height - 1), : (width - 1), :] - uv_rgb[:, 1:, 1:, :]
-            dxy_rgb = tf.pad(dxy_rgb, ((0, 0), (1, 0), (1, 0), (0, 0)))
+            dxy_rgb = tf.pad(tensor=dxy_rgb, paddings=((0, 0), (1, 0), (1, 0), (0, 0)))
 
             loss = (
                 Losses.calc_dist(
@@ -490,15 +490,15 @@ class Losses(object):
         if uv_weight_mask is None:
             uv_weight_mask = np.ones_like(uv_mask)
 
-        with tf.name_scope("loss/uv_tv_loss"):
+        with tf.compat.v1.name_scope("loss/uv_tv_loss"):
             dy_rgb = uv_rgb[:, : (height - 1), :, :] - uv_rgb[:, 1:, :, :]
-            dy_rgb = tf.pad(dy_rgb, ((0, 0), (1, 0), (0, 0), (0, 0)))
+            dy_rgb = tf.pad(tensor=dy_rgb, paddings=((0, 0), (1, 0), (0, 0), (0, 0)))
 
             dx_rgb = uv_rgb[:, :, : (width - 1), :] - uv_rgb[:, :, 1:, :]
-            dx_rgb = tf.pad(dx_rgb, ((0, 0), (0, 0), (1, 0), (0, 0)))
+            dx_rgb = tf.pad(tensor=dx_rgb, paddings=((0, 0), (0, 0), (1, 0), (0, 0)))
 
             dxy_rgb = uv_rgb[:, : (height - 1), : (width - 1), :] - uv_rgb[:, 1:, 1:, :]
-            dxy_rgb = tf.pad(dxy_rgb, ((0, 0), (1, 0), (1, 0), (0, 0)))
+            dxy_rgb = tf.pad(tensor=dxy_rgb, paddings=((0, 0), (1, 0), (1, 0), (0, 0)))
 
             if uv_weight_mask is not None:
                 uv_boundary_mask = uv_mask * uv_weight_mask
@@ -507,40 +507,40 @@ class Losses(object):
                 axes = list(range(len(uv_rgb.get_shape().as_list())))
                 ones_mask = tf.ones_like(uv_boundary_mask)
                 zeros_mask = tf.zeros_like(uv_boundary_mask)
-                binary_boundary_mask = tf.where(
+                binary_boundary_mask = tf.compat.v1.where(
                     tf.greater(uv_boundary_mask, EPS), ones_mask, zeros_mask
                 )
-                binary_non_boundary_mask = tf.where(
+                binary_non_boundary_mask = tf.compat.v1.where(
                     tf.greater(uv_non_boundary_mask, EPS), ones_mask, zeros_mask
                 )
             else:
                 binary_boundary_mask = tf.ones_like(uv_rgb)
                 binary_non_boundary_mask = tf.ones_like(uv_rgb)
 
-            binary_boundary_count = tf.reduce_sum(binary_boundary_mask, axis=axes[1:])
+            binary_boundary_count = tf.reduce_sum(input_tensor=binary_boundary_mask, axis=axes[1:])
             binary_non_boundary_count = tf.reduce_sum(
-                binary_non_boundary_mask, axis=axes[1:]
+                input_tensor=binary_non_boundary_mask, axis=axes[1:]
             )
 
             stack_delta = tf.concat([dy_rgb, dx_rgb, dxy_rgb], axis=3)
             stack_boundary_mask = tf.concat([binary_boundary_mask] * 3, axis=3)
             stack_non_boundary_mask = tf.concat([binary_non_boundary_mask] * 3, axis=3)
             sum_boundary_delta = tf.reduce_sum(
-                tf.square(stack_delta * stack_boundary_mask), axis=axes[1:]
+                input_tensor=tf.square(stack_delta * stack_boundary_mask), axis=axes[1:]
             )
             dist_boundary = (
                 tf.reduce_mean(
-                    tf.div(sum_boundary_delta, binary_boundary_count + EPS),
+                    input_tensor=tf.compat.v1.div(sum_boundary_delta, binary_boundary_count + EPS),
                     name="boundary_dist",
                 )
                 * 200
             )
 
             sum_non_boundary_delta = tf.reduce_sum(
-                tf.square(stack_delta * stack_non_boundary_mask), axis=axes[1:]
+                input_tensor=tf.square(stack_delta * stack_non_boundary_mask), axis=axes[1:]
             )
             dist_non_boundary = tf.reduce_mean(
-                tf.div(sum_non_boundary_delta, binary_non_boundary_count + EPS),
+                input_tensor=tf.compat.v1.div(sum_non_boundary_delta, binary_non_boundary_count + EPS),
                 name="non_boundary_dist",
             )
             loss = dist_boundary + dist_non_boundary
