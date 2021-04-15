@@ -54,7 +54,7 @@ def bfs_find_corrospondence(landmarks, height, width, depth):
             visit = np.zeros((height, width))
 
             visit[y][x] = 1
-            queue = [[x + 1, y], [x - 1, y], [x, y - 1], [x, y - 1]]
+            queue = [[x + 1, y], [x - 1, y], [x, y - 1], [x, y + 1]]
             while 1:
                 if len(queue):
                     x = queue[0][0]
