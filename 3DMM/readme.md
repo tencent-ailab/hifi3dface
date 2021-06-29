@@ -4,7 +4,7 @@ This folder provides the 3DMMs used in the following paper:
 
 > **High-Fidelity 3D Digital Human Head Creation from RGB-D Selfies**.\
 > Linchao Bao*, Xiangkai Lin*, Yajing Chen*, Haoxian Zhang*, Sheng Wang, Xuefei Zhe, Di Kang, Haozhi Huang, Xinwei Jiang, Jue Wang, Dong Yu, and Zhengyou Zhang. (*Equal contribution) \
-> Code: https://github.com/tencent-ailab/hifi3dface \
+> **ACM Transactions on Graphics 2021** \
 > Project Page: https://tencent-ailab.github.io/hifi3dface_projpage/ \
 > arXiv: https://arxiv.org/abs/2010.05562
 
