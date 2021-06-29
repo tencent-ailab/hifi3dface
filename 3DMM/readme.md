@@ -2,10 +2,11 @@
 
 This folder provides the 3DMMs used in the following paper:
 
-> **High-Fidelity 3D Digital Human Creation from RGB-D Selfies**.\
-> Xiangkai Lin*, Yajing Chen*, Linchao Bao*, Haoxian Zhang, Sheng Wang, Xuefei Zhe, Xinwei Jiang, Jue Wang, Dong Yu, and Zhengyou Zhang. (*Equal contribution) \
-> arXiv: https://arxiv.org/abs/2010.05562 \
+> **High-Fidelity 3D Digital Human Head Creation from RGB-D Selfies**.\
+> Linchao Bao*, Xiangkai Lin*, Yajing Chen*, Haoxian Zhang*, Sheng Wang, Xuefei Zhe, Di Kang, Haozhi Huang, Xinwei Jiang, Jue Wang, Dong Yu, and Zhengyou Zhang. (*Equal contribution) \
+> Code: https://github.com/tencent-ailab/hifi3dface \
 > Project Page: https://tencent-ailab.github.io/hifi3dface_projpage/
+> arXiv: https://arxiv.org/abs/2010.05562
 
 **Note**: The 3DMM is for research purpose only. If you use the 3DMM provided in this folder, please cite our paper. For commercial uses, please contact [Linchao Bao](https://linchaobao.github.io/). 
 
@@ -93,11 +94,11 @@ If you have any questions, please contact [Linchao Bao](https://linchaobao.githu
 If you use the code or 3DMM provided in this repository, please cite our paper as follows.
 
 ```
-@article{hifi3dface2020tencentailab,
-  title={High-Fidelity 3D Digital Human Creation from RGB-D Selfies},
-  author={Lin, Xiangkai and Chen, Yajing and Bao, Linchao and Zhang, Haoxian and Wang, Sheng and Zhe, Xuefei and Jiang, Xinwei and Wang, Jue and Yu, Dong and Zhang, Zhengyou},
-  journal={arXiv preprint arXiv:2010.05562},
-  year={2020}
+@article{hifi3dface2021tencentailab,
+  title={High-Fidelity 3D Digital Human Head Creation from RGB-D Selfies},
+  author={Bao, Linchao and Lin, Xiangkai and Chen, Yajing and Zhang, Haoxian and Wang, Sheng and Zhe, Xuefei and Kang, Di and Huang, Haozhi and Jiang, Xinwei and Wang, Jue and Yu, Dong and Zhang, Zhengyou},
+  journal={ACM Transactions on Graphics},
+  year={2021}
 }
 ```
 

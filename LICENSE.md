@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) [2020] [Tencent AI Lab]
+Copyright (c) [2020-2021] [Tencent AI Lab]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
