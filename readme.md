@@ -13,8 +13,8 @@ This repository provides the python code and 3DMM of the following paper:
 > **High-Fidelity 3D Digital Human Head Creation from RGB-D Selfies**.\
 > Linchao Bao*, Xiangkai Lin*, Yajing Chen*, Haoxian Zhang*, Sheng Wang, Xuefei Zhe, Di Kang, Haozhi Huang, Xinwei Jiang, Jue Wang, Dong Yu, and Zhengyou Zhang. (*Equal contribution) \
 > Journal: ACM Transactions on Graphics 2021 \
+> Project Page: https://tencent-ailab.github.io/hifi3dface_projpage/ \
 > arXiv: https://arxiv.org/abs/2010.05562
-> Project Page: https://tencent-ailab.github.io/hifi3dface_projpage/
 
 > **Abstract**: *We present a fully automatic system that can produce high-fidelity, photo-realistic 3D digital human heads with a consumer RGB-D selfie camera. The system only needs the user to take a short selfie RGB-D video while rotating his/her head, and can produce a high quality head reconstruction in less than 30 seconds. Our main contribution is a new facial geometry modeling and reflectance synthesis procedure that significantly improves the state-of-the-art. Specifically, given the input video a two-stage frame selection procedure is first employed to select a few high-quality frames for reconstruction. Then a differentiable renderer based 3D Morphable Model (3DMM) fitting algorithm is applied to recover facial geometries from multiview RGB-D data, which takes advantages of a powerful 3DMM basis constructed with extensive data generation and perturbation. Our 3DMM has much larger expressive capacities than conventional 3DMM, allowing us to recover more accurate facial geometry using merely linear basis. For reflectance synthesis, we present a hybrid approach that combines parametric fitting and CNNs to synthesize high-resolution albedo/normal maps with realistic hair/pore/wrinkle details. Results show that our system can produce faithful 3D digital human faces with extremely realistic details. The main code and the newly constructed 3DMM basis is publicly available.*
 
