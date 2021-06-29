@@ -81,7 +81,7 @@ This repository provides the python code and 3DMM of the following paper:
 
     You will need to download the following files to run our code: 
 
-    - Download our **3DMM** (5.4GB) and unzip it to the **./3DMM** floder: [Google Drive](https://drive.google.com/file/d/18BU5y5q3-MFJYARdSWLBjRBLKO1ZbrTH/view?usp=sharing), or [**腾讯微云**](https://share.weiyun.com/ByrUzsJG)
+    - Download our **3DMM** (5.4GB) and unzip it to the **./3DMM** floder: [Google Drive](https://drive.google.com/file/d/1vSb2EpduRJuIEUOc_aRsbjASSOUAk7tG/view?usp=sharing), or [**腾讯微云**](https://share.weiyun.com/ByrUzsJG)
     - Download the **resources.zip** (2GB) into the repo root directory **./** and unzip it: [Google Drive](https://drive.google.com/file/d/1FoBbj1qWdf2LyJkxLYnMJ4h4woTQ6QL_/view?usp=sharing), or [**腾讯微云**](https://share.weiyun.com/Hgov20It)
     - Download the **test_data.zip** (80MB) into the repo root directory **./** and unzip it: [Google Drive](https://drive.google.com/file/d/1f5imMCO0ug_ozj0cDcNYtizom5lBu2PH/view?usp=sharing), or [**腾讯微云**](https://share.weiyun.com/5PCy1rID)
 

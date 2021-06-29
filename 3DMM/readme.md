@@ -12,7 +12,7 @@ This folder provides the 3DMMs used in the following paper:
 
 
 ## Download (5.4GB)
-[Google Drive](https://drive.google.com/file/d/18BU5y5q3-MFJYARdSWLBjRBLKO1ZbrTH/view?usp=sharing), or [**腾讯微云**](https://share.weiyun.com/ByrUzsJG)
+[Google Drive](https://drive.google.com/file/d/1vSb2EpduRJuIEUOc_aRsbjASSOUAk7tG/view?usp=sharing), or [**腾讯微云**](https://share.weiyun.com/ByrUzsJG)
 
 
 ## Description of **files** folder
